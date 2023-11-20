@@ -40,7 +40,7 @@ talkButton.addEventListener('click', () => {
                     fetch('https://api.openai.com/v1/audio/transcriptions', {
                         method: 'POST',
                         headers: {
-                            'Authorization': 'Bearer ${apiKey}' // Replace with your actual API key
+                            'Authorization': `Bearer ${apiKey}` // Replace with your actual API key
                         },
                         body: formData
                     })
@@ -69,7 +69,7 @@ function queryGPT35Turbo(text) {
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer ${apiKey}', // Replace with your actual GPT-3 API key
+            'Authorization': `Bearer ${apiKey}`, // Replace with your actual GPT-3 API key
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -90,7 +90,7 @@ function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer ${apiKey}', // Replace with your actual API key
+            'Authorization': `Bearer ${apiKey}`, // Replace with your actual API key
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
