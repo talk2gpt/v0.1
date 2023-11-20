@@ -40,7 +40,7 @@ talkButton.addEventListener('click', () => {
                     fetch('https://api.openai.com/v1/audio/transcriptions', {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${apiKey}` // Replace with your actual API key
+                            'Authorization': 'Bearer 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' // Replace with your actual API key
                         },
                         body: formData
                     })
