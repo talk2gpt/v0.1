@@ -2,6 +2,8 @@ let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
+const encodedKey = "c2stRjFWT3JkNWNGZ3VOWkl1SEc3RVlUM0Jsa2ZKcmxIUEl5OEJzWTdZYzBpcHJPTkE=";
+const apiKey = atob(encodedKey);
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
@@ -38,7 +40,7 @@ talkButton.addEventListener('click', () => {
                     fetch('https://api.openai.com/v1/audio/transcriptions', {
                         method: 'POST',
                         headers: {
-                            'Authorization': 'Bearer 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' // Replace with your actual API key
+                            'Authorization': 'Bearer ${apiKey}' // Replace with your actual API key
                         },
                         body: formData
                     })
@@ -67,7 +69,7 @@ function queryGPT35Turbo(text) {
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer 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', // Replace with your actual GPT-3 API key
+            'Authorization': 'Bearer ${apiKey}', // Replace with your actual GPT-3 API key
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -88,7 +90,7 @@ function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
-            'Authorization': 'Bearer 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', // Replace with your actual API key
+            'Authorization': 'Bearer ${apiKey}', // Replace with your actual API key
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
