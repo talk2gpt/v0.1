@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Talk to GPT</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        #talkButton {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #talkButton.stop {
+            background-color: #f44336;
+        }
+        #talkButton:hover {
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <button id="talkButton">Push to Talk</button>
+    <script src="script.js"></script>
+</body>
+</html>
