@@ -3,7 +3,7 @@ let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
 const encodedKey = "c2stRjFWT3JkNWNGZ3VOWkl1SEc3RVlUM0Jsa2ZKcmxIUEl5OEJzWTdZYzBpcHJPTkE=";
-const apiKey = atob(encodedKey);
+const apiKey = "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";
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
