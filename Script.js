@@ -10,7 +10,7 @@ talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop(); // Stop recording
         talkButton.classList.remove('stop'); // Revert button appearance
-        talkButton.textContent = 'Push to Talk'; // Revert button text
+        talkButton.textContent = 'Push to Talk 4'; // Revert button text
     } else {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
