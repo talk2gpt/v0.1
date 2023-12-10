@@ -2,7 +2,7 @@ let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
-const encodedKey = "c2stYVZEMzlLdXl4MVgwVjVEQ01KYjFUM0JsYmtGSlZPMzJtTzJkVTl2N01rbzdqSGdY";
+const encodedKey = "c2stcUJLYkNUUlN3a3NTR1FRSWF0YnFUM0JsYmtGSjhZM3JaUnlTaE9oRU1nbGliRWgw";
 const apiKey = atob(encodedKey);
 
 talkButton.addEventListener('click', () => {
@@ -73,7 +73,7 @@ function queryGPT35Turbo(text) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'gpt-3.5-turbo',
+            model: 'gpt-4',
             messages: [{ role: 'system', content: 'You are a helpful assistant.' }, { role: 'user', content: text }]
         })
     })
