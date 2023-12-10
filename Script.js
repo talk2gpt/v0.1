@@ -10,7 +10,7 @@ talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop(); // Stop recording
         talkButton.classList.remove('stop'); // Revert button appearance
-        talkButton.textContent = 'Push to Talk 4'; // Revert button text
+        talkButton.textContent = 'Push to Talk'; // Revert button text
     } else {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
@@ -73,7 +73,7 @@ function queryGPT35Turbo(text) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'gpt-4',
+            model: 'gpt-4-vision-preview',
             messages: [{ role: 'system', content: 'You are a helpful assistant.' }, { role: 'user', content: text }]
         })
     })
