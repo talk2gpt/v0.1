@@ -2,7 +2,7 @@ let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
-const encodedKey = "c2stcUJLYkNUUlN3a3NTR1FRSWF0YnFUM0JsYmtGSjhZM3JaUnlTaE9oRU1nbGliRWgw";
+const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 
 talkButton.addEventListener('click', () => {
