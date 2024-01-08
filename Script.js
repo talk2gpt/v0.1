@@ -4,6 +4,9 @@ let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
+const githubToken = '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'; // Replace with your token
+let gistId = null; // This will store the ID of the gist we're using
+
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
@@ -107,4 +110,49 @@ function textToSpeech(text) {
         audio.play();
     })
     .catch(error => console.error('TTS Error:', error));
+}
+
+function saveConversationToGist(conversationText) {
+    const gistData = {
+        description: "Chat Conversation History",
+        public: false,
+        files: {
+            "conversation.txt": {
+                content: conversationText
+            }
+        }
+    };
+
+    const method = gistId ? 'PATCH' : 'POST';
+    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gistData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        gistId = data.id; // Save the ID of the created gist
+        console.log('Gist saved:', data);
+    })
+    .catch(error => console.error('Error saving Gist:', error));
+}
+
+function loadConversationFromGist(gistId) {
+    fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+            'Authorization': `token ${githubToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        conversationContext = data.files['conversation.txt'].content;
+        console.log('Gist loaded:', data);
+        // Here, you can now continue with initializing your app using the loaded conversation
+    })
+    .catch(error => console.error('Error loading Gist:', error));
 }
