@@ -5,7 +5,6 @@ const talkButton = document.getElementById('talkButton'); // Reference to the ta
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 const encodedGKey = "vQGjHQuwUs7NScg46IA4LcQW2D0gU9bm1TOsOWxtYiT0bWJjAgl6Py5ouo3d3//j";
-const githubToken = atob(encodedGKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decryptString(encodedGKey, "12345678901234567890123456789012");
 
