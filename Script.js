@@ -4,7 +4,7 @@ let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
-const githubToken = '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'; // Replace with your token
+const githubToken = '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'; // Replace with your token
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 
 
