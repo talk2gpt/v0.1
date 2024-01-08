@@ -5,7 +5,7 @@ const talkButton = document.getElementById('talkButton'); // Reference to the ta
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 const githubToken = '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'; // Replace with your token
-let gistId = 319efc519c6a17699365d23874099a78; // This will store the ID of the gist we're using
+let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 
 
 talkButton.addEventListener('click', () => {
