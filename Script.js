@@ -7,7 +7,7 @@ const apiKey = atob(encodedKey);
 const encodedGKey = "Z2hwX0VYZGpjMXdrdmUyd3g4eGlaMXM1RXNiTzRMNG5GeTBvWVpXdw==";
 const githubToken = atob(encodedGKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
-
+let githubToken = decryptString(encrypted, "vQGjHQuwUs7NScg46IA4LcQW2D0gU9bm1TOsOWxtYiT0bWJjAgl6Py5ouo3d3//j");
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
@@ -172,4 +172,12 @@ function loadConversationFromGist(gistId) {
         // Here, you can now continue with initializing your app using the loaded conversation
     })
     .catch(error => console.error('Error loading Gist:', error));
+}
+function encryptString(text, passphrase) {
+    return CryptoJS.AES.encrypt(text, passphrase).toString();
+}
+
+function decryptString(encryptedText, passphrase) {
+    var bytes  = CryptoJS.AES.decrypt(encryptedText, passphrase);
+    return bytes.toString(CryptoJS.enc.Utf8);
 }
