@@ -73,7 +73,7 @@ function queryGPT35Turbo(text) {
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'gpt-4-32k',
+            model: 'gpt-4',
             messages: [{ role: 'system', content: 'You are a helpful assistant.' }, { role: 'user', content: text }]
         })
     })
