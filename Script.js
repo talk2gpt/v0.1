@@ -5,7 +5,7 @@ const talkButton = document.getElementById('talkButton'); // Reference to the ta
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 const githubToken = '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'; // Replace with your token
-let gistId = null; // This will store the ID of the gist we're using
+let gistId = 319efc519c6a17699365d23874099a78; // This will store the ID of the gist we're using
 
 
 talkButton.addEventListener('click', () => {
@@ -69,6 +69,20 @@ talkButton.addEventListener('click', () => {
 });
 
 function queryGPT35Turbo(text) {
+    // Append the latest user message to the conversation context
+    conversationContext += 'User: ' + text + '\n';
+
+    // Prepare the messages array with the entire conversation history
+    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
+        let [role, ...content] = line.split(': ');
+        content = content.join(': '); // Rejoin the content in case there are multiple colons
+
+        return {
+            role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
+            content: content.trim()
+        };
+    });
+
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -77,17 +91,19 @@ function queryGPT35Turbo(text) {
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            messages: [{ role: 'system', content: 'You are a helpful assistant.' }, { role: 'user', content: text }]
+            messages: messages
         })
     })
     .then(response => response.json())
     .then(data => {
-        conversationContext += 'AI: ' + data.choices[0].message.content + '\n'; // Update conversation context with AI response
-        console.log(data);
-        textToSpeech(data.choices[0].message.content);
+        let aiResponse = data.choices[0].message.content;
+        conversationContext += 'AI: ' + aiResponse + '\n';
+        saveConversationToGist(conversationContext); // Save after updating conversation
+        textToSpeech(aiResponse);
     })
     .catch(error => console.error('Error:', error));
 }
+
 
 function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
