@@ -167,10 +167,13 @@ function loadConversationFromGist(gistId) {
     .then(data => {
         conversationContext = data.files['conversation.txt'].content;
         console.log('Gist loaded:', data);
-        // Here, you can now continue with initializing your app using the loaded conversation
+        // The conversationContext is now updated with the content from the Gist
     })
     .catch(error => console.error('Error loading Gist:', error));
 }
+
+// Call loadConversationFromGist to load the conversation when the page is loaded
+loadConversationFromGist(gistId);
 
 function decodeString(encodedStr) {
     return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
