@@ -6,7 +6,7 @@ const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxx
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
-//console.log("bobob:", githubToken);
+
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
