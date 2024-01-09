@@ -71,6 +71,10 @@ function queryGPT35Turbo(text) {
     // Append the latest user message to the conversation context
     conversationContext += 'User: ' + text + '\n';
 
+    // Update the conversation window with the entire conversation history
+    const conversationWindow = document.getElementById('conversationWindow');
+    conversationWindow.innerText = conversationContext;
+
     // Prepare the messages array with the entire conversation history
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
