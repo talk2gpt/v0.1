@@ -182,3 +182,18 @@ loadConversationFromGist(gistId);
 function decodeString(encodedStr) {
     return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
 }
+
+const sendTextButton = document.getElementById('sendTextButton');
+
+// Event listener for the sendTextButton
+sendTextButton.addEventListener('click', () => {
+    // Get user input from the text input box
+    const userInput = document.getElementById('textInput').value;
+
+    // Send user input to the AI
+    if (userInput) {
+        queryGPT35Turbo(userInput);
+        document.getElementById('textInput').value = ''; // Clear the input box
+    }
+});
+
