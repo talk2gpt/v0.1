@@ -70,7 +70,6 @@ talkButton.addEventListener('click', () => {
 function queryGPT35Turbo(text) {
     // Append the latest user message to the conversation context
     conversationContext += 'User: ' + text + '\n';
-
     // Update the conversation window with the entire conversation history
     const conversationWindow = document.getElementById('conversationWindow');
     conversationWindow.innerText = conversationContext;
@@ -101,12 +100,12 @@ function queryGPT35Turbo(text) {
     .then(data => {
         let aiResponse = data.choices[0].message.content;
         conversationContext += 'AI: ' + aiResponse + '\n';
+        updateConversationWindow(aiResponse); // Update the conversation window
         saveConversationToGist(conversationContext); // Save after updating conversation
         textToSpeech(aiResponse);
     })
     .catch(error => console.error('Error:', error));
 }
-
 
 function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
@@ -222,3 +221,5 @@ function loadConversationFromGist(gistId) {
 
 // Load conversation from Gist when the page is first loaded
 loadConversationFromGist(gistId);
+
+
