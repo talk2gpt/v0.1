@@ -4,10 +4,9 @@ let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
-const encodedGKey = "vQGjHQuwUs7NScg46IA4LcQW2D0gU9bm1TOsOWxtYiT0bWJjAgl6Py5ouo3d3//j";
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
-let githubToken = decryptString(encodedGKey, "12345678901234567890123456789012");
-console.log("bobob:", githubToken);
+let githubToken = decodeString(encodedStr, "gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
+//console.log("bobob:", githubToken);
 
 talkButton.addEventListener('click', () => {
     // Check if mediaRecorder is already defined and recording
@@ -173,11 +172,7 @@ function loadConversationFromGist(gistId) {
     })
     .catch(error => console.error('Error loading Gist:', error));
 }
-function encryptString(text, passphrase) {
-    return CryptoJS.AES.encrypt(text, passphrase).toString();
-}
 
-function decryptString(encryptedText, passphrase) {
-    var bytes  = CryptoJS.AES.decrypt(encryptedText, passphrase);
-    return bytes.toString(CryptoJS.enc.Utf8);
+function decodeString(encodedStr) {
+    return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
 }
