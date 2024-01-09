@@ -197,3 +197,28 @@ sendTextButton.addEventListener('click', () => {
     }
 });
 
+function updateConversationWindow(text) {
+    const conversationWindow = document.getElementById('conversationWindow');
+    conversationWindow.value += text + '\n';
+    conversationWindow.scrollTop = conversationWindow.scrollHeight;
+}
+
+// Function to load the conversation from Gist
+
+function loadConversationFromGist(gistId) {
+    fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+            'Authorization': `token ${githubToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        conversationContext = data.files['conversation.txt'].content;
+        updateConversationWindow(conversationContext); // Update the conversation window
+        console.log('Gist loaded:', data);
+    })
+    .catch(error => console.error('Error loading Gist:', error));
+}
+
+// Load conversation from Gist when the page is first loaded
+loadConversationFromGist(gistId);
