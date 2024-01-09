@@ -49,7 +49,6 @@ talkButton.addEventListener('click', () => {
                     })
                     .then(response => response.json())
                     .then(data => {
-                        conversationContext += 'User: ' + data.text + '\n'; // Update conversation context
                         console.log(data);
                         queryGPT35Turbo(data.text); // Send transcribed text to GPT-3.5-turbo
                     })
