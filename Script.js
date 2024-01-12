@@ -6,63 +6,78 @@ const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxx
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
+let recordingInterval;
 
 talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
+        stopRecording();
         talkButton.classList.remove('stop');
         talkButton.textContent = 'Push to Talk';
+        processFullConversation();
     } else {
-        navigator.mediaDevices.getUserMedia({ audio: true })
-            .then(stream => {
-                mediaRecorder = new MediaRecorder(stream);
-                mediaRecorder.start();
-
-                talkButton.classList.add('stop');
-                talkButton.textContent = 'Stop';
-
-                audioChunks = [];
-                mediaRecorder.addEventListener("dataavailable", event => {
-                    audioChunks.push(event.data);
-                });
-
-                mediaRecorder.addEventListener("stop", () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/mp3' });
-                    let audioFile = new File([audioBlob], "recording.mp3", {
-                        type: "audio/mp3",
-                    });
-
-                    let formData = new FormData();
-                    formData.append("file", audioFile);
-                    formData.append("model", "whisper-1");
-                    formData.append("context", conversationContext);
-
-                    fetch('https://api.openai.com/v1/audio/transcriptions', {
-                        method: 'POST',
-                        headers: {
-                            'Authorization': `Bearer ${apiKey}`
-                        },
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data);
-                        queryGPT35Turbo(data.text);
-                    })
-                    .catch(error => console.error('Error:', error));
-
-                    talkButton.classList.remove('stop');
-                    talkButton.textContent = 'Push to Talk';
-                });
-
-                stream.getAudioTracks()[0].addEventListener('ended', () => {
-                    mediaRecorder.stop();
-                });
-            })
-            .catch(error => console.error('Error:', error));
+        startRecording();
+        talkButton.classList.add('stop');
+        talkButton.textContent = 'Stop';
     }
 });
 
+function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+            recordingInterval = setInterval(() => {
+                if (mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    mediaRecorder.start();
+                }
+            }, 30000); // Restart recording every 30 seconds
+
+            mediaRecorder.addEventListener("dataavailable", event => {
+                audioChunks.push(event.data);
+                processAudioChunk(event.data);
+            });
+
+            stream.getAudioTracks()[0].addEventListener('ended', stopRecording);
+        })
+        .catch(error => console.error('Error:', error));
+}
+
+function stopRecording() {
+    clearInterval(recordingInterval);
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+        mediaRecorder.stop();
+    }
+}
+
+function processAudioChunk(audioBlob) {
+    let audioFile = new File([audioBlob], "recording.mp3", {
+        type: "audio/mp3",
+    });
+
+    let formData = new FormData();
+    formData.append("file", audioFile);
+    formData.append("model", "whisper-1");
+
+    fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        let transcribedText = data.text;
+        conversationContext += 'User: ' + transcribedText + '\n';
+        updateConversationWindow(transcribedText);
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function processFullConversation() {
+    queryGPT35Turbo(conversationContext);
+}
 function queryGPT35Turbo(text) {
     conversationContext += 'User: ' + text + '\n';
     const conversationWindow = document.getElementById('conversationWindow');
