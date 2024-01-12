@@ -77,11 +77,11 @@ function queryGPT35Turbo(text) {
     // Prepare the messages array with the entire conversation history
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = content.join(': '); // Rejoin the content in case there are multiple colons
-
+        content = encodeURIComponent(content.join(': ')); // Encode the content
+    
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
-            content: content.trim()
+            content: content
         };
     });
 
