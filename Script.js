@@ -6,21 +6,18 @@ const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxx
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
-//kgds
 
 talkButton.addEventListener('click', () => {
-    // Check if mediaRecorder is already defined and recording
     if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop(); // Stop recording
-        talkButton.classList.remove('stop'); // Revert button appearance
-        talkButton.textContent = 'Push to Talk'; // Revert button text
+        mediaRecorder.stop();
+        talkButton.classList.remove('stop');
+        talkButton.textContent = 'Push to Talk';
     } else {
         navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 mediaRecorder = new MediaRecorder(stream);
                 mediaRecorder.start();
 
-                // Update button to show recording state
                 talkButton.classList.add('stop');
                 talkButton.textContent = 'Stop';
 
@@ -38,23 +35,22 @@ talkButton.addEventListener('click', () => {
                     let formData = new FormData();
                     formData.append("file", audioFile);
                     formData.append("model", "whisper-1");
-                    formData.append("context", conversationContext); // Include conversation context
+                    formData.append("context", conversationContext);
 
                     fetch('https://api.openai.com/v1/audio/transcriptions', {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${apiKey}` // Replace with your actual API key
+                            'Authorization': `Bearer ${apiKey}`
                         },
                         body: formData
                     })
                     .then(response => response.json())
                     .then(data => {
                         console.log(data);
-                        queryGPT35Turbo(data.text); // Send transcribed text to GPT-3.5-turbo
+                        queryGPT35Turbo(data.text);
                     })
                     .catch(error => console.error('Error:', error));
 
-                    // Reset button appearance after processing is done
                     talkButton.classList.remove('stop');
                     talkButton.textContent = 'Push to Talk';
                 });
@@ -68,16 +64,13 @@ talkButton.addEventListener('click', () => {
 });
 
 function queryGPT35Turbo(text) {
-    // Append the latest user message to the conversation context
     conversationContext += 'User: ' + text + '\n';
-    // Update the conversation window with the entire conversation history
     const conversationWindow = document.getElementById('conversationWindow');
     conversationWindow.innerText = conversationContext;
 
-    // Prepare the messages array with the entire conversation history
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = encodeURIComponent(content.join(': ')); // Encode the content
+        content = encodeURIComponent(content.join(': '));
     
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
@@ -88,7 +81,7 @@ function queryGPT35Turbo(text) {
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`, // Replace with your actual GPT-3 API key
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -100,8 +93,8 @@ function queryGPT35Turbo(text) {
     .then(data => {
         let aiResponse = data.choices[0].message.content;
         conversationContext += 'AI: ' + aiResponse + '\n';
-        updateConversationWindow(aiResponse); // Update the conversation window
-        saveConversationToGist(conversationContext); // Save after updating conversation
+        updateConversationWindow(aiResponse);
+        saveConversationToGist(conversationContext);
         textToSpeech(aiResponse);
     })
     .catch(error => console.error('Error:', error));
@@ -111,18 +104,17 @@ function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`, // Replace with your actual API key
+            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-            model: 'tts-1', // Specify the model
-            input: text,    // The text to be converted to speech
-            voice: 'shimmer'  // Replace with your preferred voice model
+            model: 'tts-1',
+            input: text,
+            voice: 'shimmer'
         })
     })
     .then(response => response.blob())
     .then(blob => {
-        // Play the generated audio
         const audioUrl = URL.createObjectURL(blob);
         const audio = new Audio(audioUrl);
         audio.play();
@@ -154,10 +146,20 @@ function saveConversationToGist(conversationText) {
     })
     .then(response => response.json())
     .then(data => {
-        gistId = data.id; // Save the ID of the created gist
+        gistId = data.id;
         console.log('Gist saved:', data);
     })
     .catch(error => console.error('Error saving Gist:', error));
+}
+
+function updateConversationWindow(text) {
+    const conversationWindow = document.getElementById('conversationWindow');
+    if (conversationWindow) {
+        conversationWindow.innerText += text + '\n'; // Append new text
+        conversationWindow.scrollTop = conversationWindow.scrollHeight; // Auto-scroll to the latest message
+    } else {
+        console.error('Conversation window element not found');
+    }
 }
 
 function loadConversationFromGist(gistId) {
@@ -169,14 +171,13 @@ function loadConversationFromGist(gistId) {
     .then(response => response.json())
     .then(data => {
         conversationContext = data.files['conversation.txt'].content;
+        updateConversationWindow(conversationContext);
         console.log('Gist loaded:', data);
-        // The conversationContext is now updated with the content from the Gist
     })
     .catch(error => console.error('Error loading Gist:', error));
 }
 
-// Call loadConversationFromGist to load the conversation when the page is loaded
-loadConversationFromGist(gistId);
+loadConversationFromGist(gistId); // Call this function when the page loads
 
 function decodeString(encodedStr) {
     return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
@@ -184,42 +185,10 @@ function decodeString(encodedStr) {
 
 const sendTextButton = document.getElementById('sendTextButton');
 
-// Event listener for the sendTextButton
 sendTextButton.addEventListener('click', () => {
-    // Get user input from the text input box
     const userInput = document.getElementById('textInput').value;
-
-    // Send user input to the AI
     if (userInput) {
         queryGPT35Turbo(userInput);
-        document.getElementById('textInput').value = ''; // Clear the input box
+        document.getElementById('textInput').value = '';
     }
 });
-
-function updateConversationWindow(text) {
-    const conversationWindow = document.getElementById('conversationWindow');
-    conversationWindow.value += text + '\n';
-    conversationWindow.scrollTop = conversationWindow.scrollHeight;
-}
-
-// Function to load the conversation from Gist
-
-function loadConversationFromGist(gistId) {
-    fetch(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-            'Authorization': `token ${githubToken}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        conversationContext = data.files['conversation.txt'].content;
-        updateConversationWindow(conversationContext); // Update the conversation window
-        console.log('Gist loaded:', data);
-    })
-    .catch(error => console.error('Error loading Gist:', error));
-}
-
-// Load conversation from Gist when the page is first loaded
-loadConversationFromGist(gistId);
-
-
