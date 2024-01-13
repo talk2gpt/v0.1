@@ -120,7 +120,7 @@ function queryGPT35Turbo(text) {
     .catch(error => console.error('Error:', error));
 }
 function processChatResponseForNotesUpdate(response) {
-    const notesUpdatePattern = /I have updated the Important Things to Remember section as follows: (.+)/;
+    const notesUpdatePattern = /I have updated the Important Things to Remember section as follows:(.+)/;
     const match = response.match(notesUpdatePattern);
     if (match) {
         const updatedNotes = match[1];
