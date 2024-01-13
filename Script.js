@@ -4,6 +4,8 @@ let conversationContext = ''; // To maintain conversation context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
+let notesContent = ''; // To store the notes content
+let notesGistId = '19ebfaf5081406185378963c89d8c581'; // This will store the ID of the gist for notes
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
@@ -77,8 +79,11 @@ function processAudioChunk(audioBlob) {
 
 function processFullConversation() {
     queryGPT35Turbo(conversationContext);
+    processChatResponseForNotesUpdate(conversationContext);
 }
+
 function queryGPT35Turbo(text) {
+    let fullText = text + '\n\n' + notesContent;
     conversationContext += 'User: ' + text + '\n';
     const conversationWindow = document.getElementById('conversationWindow');
     conversationWindow.innerText = conversationContext;
@@ -114,7 +119,15 @@ function queryGPT35Turbo(text) {
     })
     .catch(error => console.error('Error:', error));
 }
-
+function processChatResponseForNotesUpdate(response) {
+    const notesUpdatePattern = /I have updated the Important Things to Remember section as follows: (.+)/;
+    const match = response.match(notesUpdatePattern);
+    if (match) {
+        const updatedNotes = match[1];
+        notesContent = updatedNotes;
+        saveNotesToGist(notesContent);
+    }
+}
 function textToSpeech(text) {
     fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
@@ -207,3 +220,33 @@ sendTextButton.addEventListener('click', () => {
         document.getElementById('textInput').value = '';
     }
 });
+
+function saveNotesToGist(notesText) {
+    const gistData = {
+        description: "Important Things to Remember",
+        public: false,
+        files: {
+            "notes.txt": {
+                content: notesText
+            }
+        }
+    };
+
+    const method = notesGistId ? 'PATCH' : 'POST';
+    const url = notesGistId ? `https://api.github.com/gists/${notesGistId}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gistData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        notesGistId = data.id;
+        console.log('Notes Gist saved:', data);
+    })
+    .catch(error => console.error('Error saving Notes Gist:', error));
+}
