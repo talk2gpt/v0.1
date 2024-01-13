@@ -83,15 +83,14 @@ function processFullConversation() {
 }
 
 function queryGPT35Turbo(text) {
-    let fullText = text + '\n\n' + notesContent;
     conversationContext += 'User: ' + text + '\n';
-    const conversationWindow = document.getElementById('conversationWindow');
-    conversationWindow.innerText = conversationContext;
+    const fullText = conversationContext + '\nImportant Things to Remember:\n' + notesContent;
 
-    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
+    // Prepare the messages array with the entire conversation history
+    let messages = fullText.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = encodeURIComponent(content.join(': '));
-    
+        content = encodeURIComponent(content.join(': ')); // Encode the content
+
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
             content: content
