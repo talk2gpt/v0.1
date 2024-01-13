@@ -9,6 +9,7 @@ let notesGistId = '19ebfaf5081406185378963c89d8c581'; // This will store the ID 
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
+//nfbdsv
 
 talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
