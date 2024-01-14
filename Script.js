@@ -1,4 +1,3 @@
-console.log('workin');
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
@@ -11,7 +10,7 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let notesGistId = '19ebfaf5081406185378963c89d8c581'; // Separate Gist ID for notes
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
-//fdsax
+//fdsmax
 
 window.onload = () => {
     loadConversationFromGist(gistId); // Existing function to load conversation
