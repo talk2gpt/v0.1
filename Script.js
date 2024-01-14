@@ -186,9 +186,12 @@ updateNotesWindow(notesText);
 }
 
 function parseChatGPTResponseForNotesUpdate(response) {
-    const updatePrefix = "I have updated the important things to remember section as follows:";
-    if (response.includes(updatePrefix)) {
-        const updateTextStartIndex = response.indexOf(updatePrefix) + updatePrefix.length;
+    const updatePrefix = "i have updated the important things to remember section as follows:";
+    const lowerCaseResponse = response.toLowerCase();
+
+    if (lowerCaseResponse.includes(updatePrefix)) {
+        const updateTextStartIndex = lowerCaseResponse.indexOf(updatePrefix) + updatePrefix.length;
+        // Extract the update text from the original response to preserve the original case
         const updateText = response.substring(updateTextStartIndex).trim();
         notesContext += '\\n' + updateText; // Append the update to the notes context
         updateNotesWindow(notesContext); // Update the notes window with the new notes context
