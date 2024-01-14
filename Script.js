@@ -10,6 +10,12 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let notesGistId; // Separate Gist ID for notes
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
+//fds
+
+window.onload = () => {
+    loadConversationFromGist(gistId); // Existing function to load conversation
+    loadNotesFromGist(); // New function to load notes
+};
 
 talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -146,6 +152,7 @@ function saveNotesToGist(notesText) {
                 content: notesText
             }
         }
+    updateNotesWindow(notesText);
     };
 
     const method = notesGistId ? 'PATCH' : 'POST';
@@ -255,6 +262,25 @@ function loadConversationFromGist(gistId) {
     .catch(error => console.error('Error loading Gist:', error));
 }
 
+function loadNotesFromGist() {
+    if (!notesGistId) {
+        console.log('No notes gist ID found');
+        return;
+    }
+
+    fetch(`https://api.github.com/gists/${notesGistId}`, {
+        headers: {
+            'Authorization': `token ${githubToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        notesContext = data.files['notes.txt'].content;
+        updateNotesWindow(notesContext);
+        console.log('Notes Gist loaded:', data);
+    })
+    .catch(error => console.error('Error loading Notes Gist:', error));
+}
 loadConversationFromGist(gistId); // Call this function when the page loads
 
 function decodeString(encodedStr) {
