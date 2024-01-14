@@ -109,7 +109,6 @@ function queryGPT35Turbo(text) {
 
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        // Do not encode the content as we are not passing it in a URL
         content = content.join(': ');
 
         return {
@@ -142,6 +141,9 @@ function queryGPT35Turbo(text) {
         updateConversationWindow(aiResponse);
         saveConversationToGist(conversationContext);
         textToSpeech(aiResponse);
+
+        // Call parseChatGPTResponseForNotesUpdate here to process the response
+        parseChatGPTResponseForNotesUpdate(aiResponse);
     })
     .catch(error => console.error('Error:', error));
 }
