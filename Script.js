@@ -1,10 +1,13 @@
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
+let notesContext = ''; // To maintain notes context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
+const updateNotesButton = document.getElementById('updateNotesButton'); // Reference to the update notes button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
+let notesGistId; // Separate Gist ID for notes
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 
@@ -18,6 +21,15 @@ talkButton.addEventListener('click', () => {
         startRecording();
         talkButton.classList.add('stop');
         talkButton.textContent = 'Stop';
+    }
+});
+
+updateNotesButton.addEventListener('click', () => {
+    const notesInput = document.getElementById('notesInput').value;
+    if (notesInput) {
+        notesContext = notesInput;
+        saveNotesToGist(notesContext);
+        updateNotesWindow(notesInput);
     }
 });
 
@@ -79,6 +91,7 @@ function processFullConversation() {
     queryGPT35Turbo(conversationContext);
 }
 function queryGPT35Turbo(text) {
+    const fullText = text + '\\n' + notesContext;
     conversationContext += 'User: ' + text + '\n';
     const conversationWindow = document.getElementById('conversationWindow');
     conversationWindow.innerText = conversationContext;
@@ -113,6 +126,56 @@ function queryGPT35Turbo(text) {
         textToSpeech(aiResponse);
     })
     .catch(error => console.error('Error:', error));
+}
+
+function updateNotesWindow(text) {
+    const notesWindow = document.getElementById('notesWindow');
+    if (notesWindow) {
+        notesWindow.innerText = text; // Update the notes window
+    } else {
+        console.error('Notes window element not found');
+    }
+}
+
+function saveNotesToGist(notesText) {
+    const gistData = {
+        description: "Notes History",
+        public: false,
+        files: {
+            "notes.txt": {
+                content: notesText
+            }
+        }
+    };
+
+    const method = notesGistId ? 'PATCH' : 'POST';
+    const url = notesGistId ? `https://api.github.com/gists/${notesGistId}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gistData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        notesGistId = data.id; // Update the notesGistId with the new or existing gist ID
+        console.log('Notes Gist saved:', data);
+    })
+    .catch(error => console.error('Error saving Notes Gist:', error));
+}
+
+function parseChatGPTResponseForNotesUpdate(response) {
+    const updatePrefix = "I have updated the important things to remember section as follows:";
+    if (response.includes(updatePrefix)) {
+        const updateTextStartIndex = response.indexOf(updatePrefix) + updatePrefix.length;
+        const updateText = response.substring(updateTextStartIndex).trim();
+        notesContext += '\\n' + updateText; // Append the update to the notes context
+        updateNotesWindow(notesContext); // Update the notes window with the new notes context
+        saveNotesToGist(notesContext); // Save the updated notes to the gist
+    }
 }
 
 function textToSpeech(text) {
