@@ -10,7 +10,7 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let notesGistId = '19ebfaf5081406185378963c89d8c581'; // Separate Gist ID for notes
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
-//fdsa
+//fdsax
 
 window.onload = () => {
     loadConversationFromGist(gistId); // Existing function to load conversation
@@ -196,6 +196,9 @@ function parseChatGPTResponseForNotesUpdate(response) {
         notesContext += '\\n' + updateText; // Append the update to the notes context
         updateNotesWindow(notesContext); // Update the notes window with the new notes context
         saveNotesToGist(notesContext); // Save the updated notes to the gist
+        console.log('Worked');
+    } else {
+        console.log('lowerCaseResponse:',lowerCaseResponse,'   updatePrefix:',updatePrefix);
     }
 }
 
