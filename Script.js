@@ -1,3 +1,4 @@
+console.log('workin');
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
