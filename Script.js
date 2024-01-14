@@ -152,7 +152,6 @@ function saveNotesToGist(notesText) {
                 content: notesText
             }
         }
-    updateNotesWindow(notesText);
     };
 
     const method = notesGistId ? 'PATCH' : 'POST';
@@ -172,6 +171,7 @@ function saveNotesToGist(notesText) {
         console.log('Notes Gist saved:', data);
     })
     .catch(error => console.error('Error saving Notes Gist:', error));
+updateNotesWindow(notesText);
 }
 
 function parseChatGPTResponseForNotesUpdate(response) {
