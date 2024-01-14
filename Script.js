@@ -97,19 +97,30 @@ function processFullConversation() {
     queryGPT35Turbo(conversationContext);
 }
 function queryGPT35Turbo(text) {
-    const fullText = text + '\\n' + notesContext;
+    // Combine the latest user prompt with the notes
+    const fullText = text + '\\n\\nImportant things to remember when you respond to this prompt:\\n' + notesContext;
+
+    // Update the conversation context with the user's latest prompt only
     conversationContext += 'User: ' + text + '\n';
-    const conversationWindow = document.getElementById('conversationWindow');
-    conversationWindow.innerText = conversationContext;
+
+    // Update the conversation window with the current conversation context
+    updateConversationWindow(conversationContext);
 
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = encodeURIComponent(content.join(': '));
-    
+        // Do not encode the content as we are not passing it in a URL
+        content = content.join(': ');
+
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
             content: content
         };
+    });
+
+    // Add the fullText as the latest message to send to the API
+    messages.push({
+        role: 'user',
+        content: fullText
     });
 
     fetch('https://api.openai.com/v1/chat/completions', {
