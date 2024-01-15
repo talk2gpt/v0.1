@@ -136,7 +136,7 @@ function queryGPT35Turbo(text) {
                     },
                     "change_to_important_things_to_remember": {
                         "type": "string",
-                        "description": "When the user specifically asks to make a change to the important things to remember section, that change will go here."
+                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the "Persistent Instructions" section, that change will go here."
                     }
                 },
                 "required": ["chat_completion", "change_to_important_things_to_remember"]
