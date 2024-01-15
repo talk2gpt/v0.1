@@ -139,7 +139,7 @@ function queryGPT35Turbo(text) {
                         "description": "When the user specifically asks to make a change to the important things to remember section, that change will go here."
                     }
                 },
-                "required": ["chat_completion", "important_note"]
+                "required": ["chat_completion", "change_to_important_things_to_remember"]
             },
         }
     }];
