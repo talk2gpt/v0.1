@@ -102,12 +102,12 @@ function queryGPT35Turbo(text) {
     const fullText = text + '\\n\\nImportant things to remember when you respond to this prompt:\\n' + notesContext;
 
     // Update the conversation context with the user's latest prompt only
-    conversationContext += 'User: ' + text + '\\n';
+    conversationContext += 'User: ' + text + '\n';
 
     // Update the conversation window with the current conversation context
     updateConversationWindow(conversationContext);
 
-    let messages = conversationContext.split('\\n').filter(line => line.trim() !== '').map(line => {
+    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
         content = content.join(': ');
 
@@ -122,8 +122,6 @@ function queryGPT35Turbo(text) {
         role: 'user',
         content: fullText
     });
-
-    // Define the function tool for managing notes
     let tools = [{
         "type": "function",
         "function": {
@@ -143,10 +141,6 @@ function queryGPT35Turbo(text) {
                 },
                 "required": ["chat_completion", "important_note"]
             },
-            "input": {
-                "chat_completion": text, // The regular chat text
-                "important_note": "" // Placeholder for important note, to be filled based on context
-            }
         }
     }];
 
@@ -165,7 +159,7 @@ function queryGPT35Turbo(text) {
     .then(response => response.json())
     .then(data => {
         let aiResponse = data.choices[0].message.content;
-        conversationContext += 'AI: ' + aiResponse + '\\n';
+        conversationContext += 'AI: ' + aiResponse + '\n';
         updateConversationWindow(aiResponse);
         saveConversationToGist(conversationContext);
         textToSpeech(aiResponse);
