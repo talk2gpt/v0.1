@@ -125,21 +125,21 @@ function queryGPT35Turbo(text) {
     let tools = [{
         "type": "function",
         "function": {
-            "name": "managePersistentInstructions",
-            "description": "Manage Persistent Instructions",
+            "name": "managePineappleRembrandt",
+            "description": "Manage Pineapple Rembrandt",
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "chat_completion": {
+                    "gpt_response": {
                         "type": "string",
-                        "description": "The regular chat completion response"
+                        "description": "The response to the total query from ChatGPT"
                     },
-                    "change_to_Persistent_Instructions": {
+                    "change_to_Pineapple_Rembrandt": {
                         "type": "string",
-                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Persistent Instructions section and specifically uses the specific phrase 'persistent instructions', that change will go here."
+                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Pineapple Rembrandt section using the specific phrase 'Pineapple Rembrandt', that change will go here."
                     }
                 },
-                "required": ["chat_completion", "change_to_Persistent_Instructions"]
+                "required": ["gpt_response", "change_to_Pineapple_Rembrandt"]
             },
         }
     }];
