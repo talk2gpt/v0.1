@@ -134,9 +134,9 @@ function queryGPT35Turbo(text) {
                         "type": "string",
                         "description": "The regular chat completion response"
                     },
-                    "important_note": {
+                    "change_to_important_things_to_remember": {
                         "type": "string",
-                        "description": "The important note to add"
+                        "description": "When the user specifically asks to make a change to the important things to remember section, that change will go here."
                     }
                 },
                 "required": ["chat_completion", "important_note"]
