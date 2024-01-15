@@ -99,7 +99,7 @@ function processFullConversation() {
 
 function queryGPT35Turbo(text) {
     // Combine the latest user prompt with the notes
-    const fullText = text + '\\n\\nBlorp:\\n' + notesContext;
+    const fullText = text + '\\n\\nImportant Things To Remember When Responding To This Chat:\\n' + notesContext;
 
     // Update the conversation context with the user's latest prompt only
     conversationContext += 'User: ' + text + '\n';
