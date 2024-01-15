@@ -125,8 +125,8 @@ function queryGPT35Turbo(text) {
     let tools = [{
         "type": "function",
         "function": {
-            "name": "manageNotes",
-            "description": "Manage important notes",
+            "name": "managePersistentInstructions",
+            "description": "Manage Persistent Instructions",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -134,12 +134,12 @@ function queryGPT35Turbo(text) {
                         "type": "string",
                         "description": "The regular chat completion response"
                     },
-                    "change_to_important_things_to_remember": {
+                    "change_to_Persistent_Instructions": {
                         "type": "string",
                         "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Persistent Instructions section, that change will go here."
                     }
                 },
-                "required": ["chat_completion", "change_to_important_things_to_remember"]
+                "required": ["chat_completion", "change_to_Persistent_Instructions"]
             },
         }
     }];
