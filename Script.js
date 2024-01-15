@@ -96,17 +96,18 @@ function processAudioChunk(audioBlob) {
 function processFullConversation() {
     queryGPT35Turbo(conversationContext);
 }
+
 function queryGPT35Turbo(text) {
     // Combine the latest user prompt with the notes
     const fullText = text + '\\n\\nImportant things to remember when you respond to this prompt:\\n' + notesContext;
 
     // Update the conversation context with the user's latest prompt only
-    conversationContext += 'User: ' + text + '\n';
+    conversationContext += 'User: ' + text + '\\n';
 
     // Update the conversation window with the current conversation context
     updateConversationWindow(conversationContext);
 
-    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
+    let messages = conversationContext.split('\\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
         content = content.join(': ');
 
@@ -122,6 +123,33 @@ function queryGPT35Turbo(text) {
         content: fullText
     });
 
+    // Define the function tool for managing notes
+    let tools = [{
+        "type": "function",
+        "function": {
+            "name": "manageNotes",
+            "description": "Manage important notes",
+            "parameters": {
+                "type": "object",
+                "properties": {
+                    "chat_completion": {
+                        "type": "string",
+                        "description": "The regular chat completion response"
+                    },
+                    "important_note": {
+                        "type": "string",
+                        "description": "The important note to add"
+                    }
+                },
+                "required": ["chat_completion", "important_note"]
+            },
+            "input": {
+                "chat_completion": text, // The regular chat text
+                "important_note": "" // Placeholder for important note, to be filled based on context
+            }
+        }
+    }];
+
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -130,13 +158,14 @@ function queryGPT35Turbo(text) {
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            messages: messages
+            messages: messages,
+            tools: tools
         })
     })
     .then(response => response.json())
     .then(data => {
         let aiResponse = data.choices[0].message.content;
-        conversationContext += 'AI: ' + aiResponse + '\n';
+        conversationContext += 'AI: ' + aiResponse + '\\n';
         updateConversationWindow(aiResponse);
         saveConversationToGist(conversationContext);
         textToSpeech(aiResponse);
