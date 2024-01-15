@@ -136,7 +136,7 @@ function queryGPT35Turbo(text) {
                     },
                     "change_to_Persistent_Instructions": {
                         "type": "string",
-                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Persistent Instructions section, that change will go here."
+                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Persistent Instructions section and specifically uses the specific phrase 'persistent instructions', that change will go here."
                     }
                 },
                 "required": ["chat_completion", "change_to_Persistent_Instructions"]
