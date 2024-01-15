@@ -130,10 +130,6 @@ function queryGPT35Turbo(text) {
             "parameters": {
                 "type": "object",
                 "properties": {
-                    "gpt_response": {
-                        "type": "string",
-                        "description": "The response to the total query from ChatGPT"
-                    },
                     "change_to_Pineapple_Rembrandt": {
                         "type": "string",
                         "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Pineapple Rembrandt section using the specific phrase 'Pineapple Rembrandt', that change will go here."
