@@ -8,7 +8,7 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
-//yrtuinatk
+//yrtuinatkih
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -316,7 +316,7 @@ function processEndOfEveryPromptEdit(userInput) {
     })
     .then(response => response.json())
     .then(data => {
-        let revisedInstructions = data.choices[0].text.trim();
+        let revisedInstructions = data.choices[0].message.content;
         endOfEveryPromptText = revisedInstructions;
         document.getElementById('endOfEveryPromptInput').value = revisedInstructions;
         saveEndOfEveryPromptToGist(revisedInstructions); // Function to save to gist
