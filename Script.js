@@ -12,7 +12,7 @@ let endOfEveryPromptText = ''; // This will hold the text to be appended at the 
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
-    loadEndOfEveryPromptFromGist('your_gist_id_here');
+    loadEndOfEveryPromptFromGist(gistId);
 });
 
 talkButton.addEventListener('click', () => {
