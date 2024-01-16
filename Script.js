@@ -303,7 +303,7 @@ function processEndOfEveryPromptEdit(userInput) {
     let completePrompt = introText + currentContent + changeRequest + instructionForGPT;
 
     // Send completePrompt to GPT-4, process the response, and update the end of every prompt text and gist
-    fetch('https://api.openai.com/v1/completions', {
+    fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
             'Authorization': `Bearer ${apiKey}`,
