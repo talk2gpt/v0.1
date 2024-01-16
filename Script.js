@@ -311,8 +311,7 @@ function processEndOfEveryPromptEdit(userInput) {
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            prompt: completePrompt,
-            max_tokens: 150 // Adjust max_tokens as needed
+            messages: completePrompt,
         })
     })
     .then(response => response.json())
