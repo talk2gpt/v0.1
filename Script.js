@@ -1,21 +1,19 @@
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = ''; // To maintain conversation context
-let notesContext = ''; // To maintain notes context
 const talkButton = document.getElementById('talkButton'); // Reference to the talk button
-const updateNotesButton = document.getElementById('updateNotesButton'); // Reference to the update notes button
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
-let notesGistId = '19ebfaf5081406185378963c89d8c581'; // Separate Gist ID for notes
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
-//fdsmaxasedutun
+let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
+//yrtui
 
-window.onload = () => {
-    loadConversationFromGist(gistId); // Existing function to load conversation
-    loadNotesFromGist(); // New function to load notes
-};
+// Call this function with the appropriate gist ID when the page loads
+window.addEventListener('load', () => {
+    loadEndOfEveryPromptFromGist('your_gist_id_here');
+});
 
 talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -27,15 +25,6 @@ talkButton.addEventListener('click', () => {
         startRecording();
         talkButton.classList.add('stop');
         talkButton.textContent = 'Stop';
-    }
-});
-
-updateNotesButton.addEventListener('click', () => {
-    const notesInput = document.getElementById('notesInput').value;
-    if (notesInput) {
-        notesContext = notesInput;
-        saveNotesToGist(notesContext);
-        updateNotesWindow(notesInput);
     }
 });
 
@@ -98,48 +87,31 @@ function processFullConversation() {
 }
 
 function queryGPT35Turbo(text) {
-    // Combine the latest user prompt with the notes
-    const fullText = text + '\\n\\nImportant Things To Remember When Responding To This Chat:\\n' + notesContext;
-
-    // Update the conversation context with the user's latest prompt only
+    // Add user's input to the conversation context for display
     conversationContext += 'User: ' + text + '\n';
+    const conversationWindow = document.getElementById('conversationWindow');
+    conversationWindow.innerText = conversationContext;
 
-    // Update the conversation window with the current conversation context
-    updateConversationWindow(conversationContext);
-
+    // Split the conversation context into messages
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = content.join(': ');
-
+        content = content.join(': '); // Keep the content as is (not encoded)
+    
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
             content: content
         };
     });
 
-    // Add the fullText as the latest message to send to the API
-    messages.push({
-        role: 'user',
-        content: fullText
-    });
-    let tools = [{
-        "type": "function",
-        "function": {
-            "name": "managePineappleRembrandt",
-            "description": "Manage Pineapple Rembrandt",
-            "parameters": {
-                "type": "object",
-                "properties": {
-                    "change_to_Pineapple_Rembrandt": {
-                        "type": "string",
-                        "description": "When the user explicitly asks to make an addition, subtraction, or edit to the Pineapple Rembrandt section using the specific phrase 'Pineapple Rembrandt', that change will go here."
-                    }
-                },
-                "required": ["gpt_response", "change_to_Pineapple_Rembrandt"]
-            },
+    // Append the 'End of Every Prompt' content to the last user message before sending to GPT
+    if (endOfEveryPromptText && messages.length > 0) {
+        let lastMessage = messages[messages.length - 1];
+        if (lastMessage.role === 'user') {
+            lastMessage.content += '\n' + endOfEveryPromptText; // Append the extra content
         }
-    }];
+    }
 
+    // Fetch request to GPT-4 API
     fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -148,8 +120,7 @@ function queryGPT35Turbo(text) {
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            messages: messages,
-            tools: tools
+            messages: messages
         })
     })
     .then(response => response.json())
@@ -159,68 +130,8 @@ function queryGPT35Turbo(text) {
         updateConversationWindow(aiResponse);
         saveConversationToGist(conversationContext);
         textToSpeech(aiResponse);
-
-        // Call parseChatGPTResponseForNotesUpdate here to process the response
-        parseChatGPTResponseForNotesUpdate(aiResponse);
     })
     .catch(error => console.error('Error:', error));
-}
-
-function updateNotesWindow(text) {
-    const notesWindow = document.getElementById('notesWindow');
-    if (notesWindow) {
-        notesWindow.innerText = text; // Update the notes window
-    } else {
-        console.error('Notes window element not found');
-    }
-}
-
-function saveNotesToGist(notesText) {
-    const gistData = {
-        description: "Notes History",
-        public: false,
-        files: {
-            "notes.txt": {
-                content: notesText
-            }
-        }
-    };
-
-    const method = notesGistId ? 'PATCH' : 'POST';
-    const url = notesGistId ? `https://api.github.com/gists/${notesGistId}` : 'https://api.github.com/gists';
-
-    fetch(url, {
-        method: method,
-        headers: {
-            'Authorization': `token ${githubToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gistData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        notesGistId = data.id; // Update the notesGistId with the new or existing gist ID
-        console.log('Notes Gist saved:', data);
-    })
-    .catch(error => console.error('Error saving Notes Gist:', error));
-updateNotesWindow(notesText);
-}
-
-function parseChatGPTResponseForNotesUpdate(response) {
-    const updatePrefix = "i have updated the important things to remember section as follows:";
-    const lowerCaseResponse = response.toLowerCase();
-
-    if (lowerCaseResponse.includes(updatePrefix)) {
-        const updateTextStartIndex = lowerCaseResponse.indexOf(updatePrefix) + updatePrefix.length;
-        // Extract the update text from the original response to preserve the original case
-        const updateText = response.substring(updateTextStartIndex).trim();
-        notesContext += '\\n' + updateText; // Append the update to the notes context
-        updateNotesWindow(notesContext); // Update the notes window with the new notes context
-        saveNotesToGist(notesContext); // Save the updated notes to the gist
-        console.log('Worked');
-    } else {
-        console.log('lowerCaseResponse:',lowerCaseResponse,'   updatePrefix:',updatePrefix);
-    }
 }
 
 function textToSpeech(text) {
@@ -300,25 +211,6 @@ function loadConversationFromGist(gistId) {
     .catch(error => console.error('Error loading Gist:', error));
 }
 
-function loadNotesFromGist() {
-    if (!notesGistId) {
-        console.log('No notes gist ID found');
-        return;
-    }
-
-    fetch(`https://api.github.com/gists/${notesGistId}`, {
-        headers: {
-            'Authorization': `token ${githubToken}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        notesContext = data.files['notes.txt'].content;
-        updateNotesWindow(notesContext);
-        console.log('Notes Gist loaded:', data);
-    })
-    .catch(error => console.error('Error loading Notes Gist:', error));
-}
 loadConversationFromGist(gistId); // Call this function when the page loads
 
 function decodeString(encodedStr) {
@@ -334,3 +226,103 @@ sendTextButton.addEventListener('click', () => {
         document.getElementById('textInput').value = '';
     }
 });
+
+// Function to load and display text from the 'End of Every Prompt' gist
+function loadEndOfEveryPromptFromGist(gistId) {
+    fetch(`https://api.github.com/gists/${gistId}`)
+        .then(response => response.json())
+        .then(data => {
+            // Assuming the content is stored in a file named 'endOfEveryPrompt.txt' in the gist
+            endOfEveryPromptText = data.files['endOfEveryPrompt.txt'].content;
+
+            // Update the text area with the fetched content
+            document.getElementById('endOfEveryPromptInput').value = endOfEveryPromptText;
+        })
+        .catch(error => {
+            console.error('Error loading End of Every Prompt content:', error);
+            // Handle any errors here, such as displaying an error message to the user
+        });
+}
+
+function saveEndOfEveryPromptToGist(updatedText) {
+    const gistData = {
+        description: "End of Every Prompt Content",
+        public: false,
+        files: {
+            "endOfEveryPrompt.txt": {
+                content: updatedText
+            }
+        }
+    };
+
+    const method = gistIdForEndOfEveryPrompt ? 'PATCH' : 'POST';
+    const url = gistIdForEndOfEveryPrompt ? `https://api.github.com/gists/${gistIdForEndOfEveryPrompt}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': `token ${githubToken}`, // Ensure you have a valid GitHub token
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gistData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data && data.id) {
+            gistIdForEndOfEveryPrompt = data.id; // Save the Gist ID for future updates
+            endOfEveryPromptText = updatedText; // Update the global variable
+            console.log('Gist updated successfully:', data);
+        } else {
+            throw new Error('Failed to update Gist');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating Gist:', error);
+    });
+}
+
+document.getElementById('submitEndOfEveryPromptEdit').addEventListener('click', () => {
+    let userInput = document.getElementById('endOfEveryPromptInput').value;
+    processEndOfEveryPromptEdit(userInput);
+});
+
+function processEndOfEveryPromptEdit(userInput) {
+    // Predefined introduction text explaining the purpose of the text
+    let introText = "This is the text of a set of custom instructions for an implementation of GPT-4:\n";
+
+    // Current end of every prompt content
+    let currentContent = endOfEveryPromptText;
+
+    // User's proposed changes
+    let changeRequest = "\nThe user wants to change these instrctions. This is a prompt provided by the user to change these instructions:\n" + userInput;
+
+    // Specific instruction for GPT-4
+    let instructionForGPT = "\nPlease return new custom instructions revised based on this user prompt. Only return the revised instructions exactly, with no additional text before or after.";
+
+    // Complete prompt to send to GPT-4
+    let completePrompt = introText + currentContent + changeRequest + instructionForGPT;
+
+    // Send completePrompt to GPT-4, process the response, and update the end of every prompt text and gist
+    fetch('https://api.openai.com/v1/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'gpt-4-1106-preview',
+            prompt: completePrompt,
+            max_tokens: 150 // Adjust max_tokens as needed
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        let revisedInstructions = data.choices[0].text.trim();
+        endOfEveryPromptText = revisedInstructions;
+        document.getElementById('endOfEveryPromptInput').value = revisedInstructions;
+        saveEndOfEveryPromptToGist(revisedInstructions); // Function to save to gist
+    })
+    .catch(error => {
+        console.error('Error processing end of every prompt edit:', error);
+    });
+}
