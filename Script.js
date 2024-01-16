@@ -255,8 +255,8 @@ function saveEndOfEveryPromptToGist(updatedText) {
         }
     };
 
-    const method = gistIdForEndOfEveryPrompt ? 'PATCH' : 'POST';
-    const url = gistIdForEndOfEveryPrompt ? `https://api.github.com/gists/${gistIdForEndOfEveryPrompt}` : 'https://api.github.com/gists';
+    const method = gistId ? 'PATCH' : 'POST';
+    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
 
     fetch(url, {
         method: method,
