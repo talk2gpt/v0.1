@@ -311,7 +311,7 @@ function processEndOfEveryPromptEdit(userInput) {
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            messages: completePrompt,
+            messages: [{role: "system", content: completePrompt}] // Structure as per Chat API requirements
         })
     })
     .then(response => response.json())
