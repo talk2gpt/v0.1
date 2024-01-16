@@ -10,7 +10,7 @@
             height: 100vh;
             margin: 0;
         }
-        #conversationWindow {
+        .conversationWindow {
             overflow-y: scroll;
             max-height: 50vh;
             width: 80vw;
@@ -19,7 +19,7 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
-        #textInput {
+        .textInput {
             width: 80vw;
             max-width: 300px;
             padding: 10px;
@@ -28,7 +28,7 @@
             border-radius: 5px;
             margin-bottom: 10px;
         }
-        #sendTextButton, #talkButton {
+        .button {
             width: 80vw;
             max-width: 300px;
             padding: 10px;
@@ -40,23 +40,28 @@
             cursor: pointer;
             margin-bottom: 10px;
         }
-        #talkButton.stop {
+        .button.stop {
             background-color: #f44336;
         }
-        #talkButton:hover, #sendTextButton:hover {
+        .button:hover {
             opacity: 0.8;
         }
     </style>
 </head>
 <body>
-    <div id="conversationWindow">
+    <div class="conversationWindow" id="conversationWindow">
         <!-- Conversation history will be displayed here -->
     </div>
-    <textarea id="textInput" rows="4" placeholder="Type your message here"></textarea>
-    <button id="sendTextButton">Send Text</button>
-    <button id="talkButton" style="font-size: 18px;">Push to Talk</button>
-    <textarea id="endOfEveryPromptInput" rows="4" placeholder="Edit end of every prompt content here"></textarea>
-    <button id="submitEndOfEveryPromptEdit">Submit Changes</button>
+    <textarea class="textInput" id="textInput" rows="4" placeholder="Type your message here"></textarea>
+    <button class="button" id="sendTextButton">Send Text</button>
+    <button class="button" id="talkButton" style="font-size: 18px;">Push to Talk</button>
+
+    <div class="conversationWindow" id="endOfEveryPromptWindow">
+        <!-- End of every prompt content will be displayed here -->
+    </div>
+    <textarea class="textInput" id="endOfEveryPromptInput" rows="4" placeholder="Edit end of every prompt content here"></textarea>
+    <button class="button" id="submitEndOfEveryPromptEdit">Submit Changes</button>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
     <script src="https://talk2gpt.github.io/v0.1/Script.js"></script>
 </body>
