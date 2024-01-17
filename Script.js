@@ -8,7 +8,7 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
-//nbv
+//nbvn
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -328,35 +328,32 @@ function processEndOfEveryPromptEdit(userInput) {
 
 const openaiWebSocketURL = 'wss://api.openai.com/v1/chat/completions/stream';
 
-let webSocket;
+let webSocket = new WebSocket(openaiWebSocketURL, {
+    headers: {
+        'Authorization': `Bearer ${apiKey}`
+    }
+});
 
-function establishWebSocketConnection(apiKey) {
-    webSocket = new WebSocket(openaiWebSocketURL, {
-        headers: {
-            'Authorization': `Bearer ${apiKey}`
-        }
-    });
+webSocket.onopen = function(event) {
+    console.log("WebSocket Connection Established", event);
+    // Connection is open, can send data using webSocket.send()
+};
 
-    webSocket.onopen = function(event) {
-        console.log("WebSocket Connection Established", event);
-        // Connection is open, can send data using webSocket.send()
-    };
+webSocket.onmessage = function(event) {
+    console.log("Message from WebSocket:", event.data);
+    // Handle incoming messages
+};
 
-    webSocket.onmessage = function(event) {
-        console.log("Message from WebSocket:", event.data);
-        // Handle incoming messages
-    };
+webSocket.onerror = function(event) {
+    console.error("WebSocket Error:", event);
+    // Handle errors
+};
 
-    webSocket.onerror = function(event) {
-        console.error("WebSocket Error:", event);
-        // Handle errors
-    };
+webSocket.onclose = function(event) {
+    console.log("WebSocket Connection Closed", event);
+    // Handle connection closure
+};
 
-    webSocket.onclose = function(event) {
-        console.log("WebSocket Connection Closed", event);
-        // Handle connection closure
-    };
-}
 
 // Event Listener for User Input
 sendTextButton.addEventListener('click', () => {
