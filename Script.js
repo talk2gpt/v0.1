@@ -8,7 +8,7 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
-//yrtuinatkih
+//nbv
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -324,4 +324,100 @@ function processEndOfEveryPromptEdit(userInput) {
     .catch(error => {
         console.error('Error processing end of every prompt edit:', error);
     });
+}
+
+const openaiWebSocketURL = 'wss://api.openai.com/v1/chat/completions/stream';
+
+let webSocket;
+
+function establishWebSocketConnection(apiKey) {
+    webSocket = new WebSocket(openaiWebSocketURL, {
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        }
+    });
+
+    webSocket.onopen = function(event) {
+        console.log("WebSocket Connection Established", event);
+        // Connection is open, can send data using webSocket.send()
+    };
+
+    webSocket.onmessage = function(event) {
+        console.log("Message from WebSocket:", event.data);
+        // Handle incoming messages
+    };
+
+    webSocket.onerror = function(event) {
+        console.error("WebSocket Error:", event);
+        // Handle errors
+    };
+
+    webSocket.onclose = function(event) {
+        console.log("WebSocket Connection Closed", event);
+        // Handle connection closure
+    };
+}
+
+// Event Listener for User Input
+sendTextButton.addEventListener('click', () => {
+    const userInput = document.getElementById('textInput').value;
+    if (userInput) {
+        sendUserInputToChat(userInput);
+        document.getElementById('textInput').value = ''; // Clear the input field
+    }
+});
+
+function sendUserInputToChat(inputText) {
+    const message = {
+        role: "user",
+        content: inputText
+    };
+
+    if (webSocket.readyState === WebSocket.OPEN) {
+        webSocket.send(JSON.stringify(message));
+
+        // Update conversation context and UI
+        conversationContext += 'User: ' + inputText + '\n';
+        updateConversationWindow('User: ' + inputText);
+    } else {
+        console.error("WebSocket is not open.");
+        // Handle the scenario where the WebSocket is not open
+    }
+}
+
+let messageBuffer = ''; // Initialize the message buffer
+
+webSocket.onmessage = function(event) {
+    console.log("Message from WebSocket:", event.data);
+    messageBuffer += event.data;
+
+    if (isMessageComplete(messageBuffer)) {
+        try {
+            const response = JSON.parse(messageBuffer);
+            if (response && response.choices && response.choices[0] && response.choices[0].message) {
+                const aiResponse = response.choices[0].message.content;
+                conversationContext += 'AI: ' + aiResponse + '\n';
+                updateConversationWindow('AI: ' + aiResponse);
+            }
+            messageBuffer = ''; // Clear the buffer
+        } catch (error) {
+            console.error('Error parsing JSON:', error);
+        }
+    }
+};
+
+function isMessageComplete(buffer) {
+    // Implement logic to determine if the buffered data forms a complete message
+    // For example, check for a specific delimiter or closing character
+    return buffer.endsWith('\n'); // Example condition
+}
+
+function updateConversationWindow(text) {
+    const conversationWindow = document.getElementById('conversationWindow');
+    if (conversationWindow) {
+        conversationWindow.innerText += text + '\n';
+        conversationWindow.scrollTop = conversationWindow.scrollHeight;
+    } else {
+        console.error('Conversation window element not found');
+    }
 }
