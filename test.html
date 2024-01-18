@@ -1,0 +1,10 @@
+<html>
+<body>
+  <script>
+    const evtSource = new EventSource('https://mammoth-spice-peace.glitch.me/events');
+    evtSource.onmessage = (event) => {
+      console.log('Data:', event.data);
+    };
+  </script>
+</body>
+</html>
