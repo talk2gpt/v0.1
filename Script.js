@@ -9,7 +9,7 @@ let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObun
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-//nbvnnnn
+//nbvnnnniiiiaaaa
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
