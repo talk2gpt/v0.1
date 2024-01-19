@@ -8,7 +8,8 @@ let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of th
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
-//nbvn
+const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
+//nbvnnnn
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -89,49 +90,56 @@ function processFullConversation() {
 function queryGPT35Turbo(text) {
     // Add user's input to the conversation context for display
     conversationContext += 'User: ' + text + '\n';
-    const conversationWindow = document.getElementById('conversationWindow');
-    conversationWindow.innerText = conversationContext;
+    updateConversationWindow('User: ' + text);
 
     // Split the conversation context into messages
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
         let [role, ...content] = line.split(': ');
-        content = content.join(': '); // Keep the content as is (not encoded)
-    
         return {
             role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
-            content: content
+            content: content.join(': ')
         };
     });
 
-    // Append the 'End of Every Prompt' content to the last user message before sending to GPT
-    if (endOfEveryPromptText && messages.length > 0) {
-        let lastMessage = messages[messages.length - 1];
-        if (lastMessage.role === 'user') {
-            lastMessage.content += '\n' + endOfEveryPromptText; // Append the extra content
-        }
+    // Append the 'End of Every Prompt' content to the last user message
+    if (endOfEveryPromptText && messages.length > 0 && messages[messages.length - 1].role === 'user') {
+        messages[messages.length - 1].content += '\n' + endOfEveryPromptText;
     }
 
-    // Fetch request to GPT-4 API
-    fetch('https://api.openai.com/v1/chat/completions', {
+    // Construct the payload to send to your Glitch server
+    let payload = {
+        model: 'gpt-4-1106-preview',
+        messages: messages
+    };
+
+    // Send the payload to your Glitch server
+    fetch('https://mammoth-spice-peace.glitch.me/send-message', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            model: 'gpt-4-1106-preview',
-            messages: messages
-        })
+        body: JSON.stringify(payload)
     })
-    .then(response => response.json())
-    .then(data => {
-        let aiResponse = data.choices[0].message.content;
-        conversationContext += 'AI: ' + aiResponse + '\n';
-        updateConversationWindow(aiResponse);
-        saveConversationToGist(conversationContext);
-        textToSpeech(aiResponse);
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        // Optionally handle the immediate response from the server if needed
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Error sending message to Glitch server:', error);
+    });
+}
+
+// Utility function to update the conversation window
+function updateConversationWindow(text) {
+    const conversationWindow = document.getElementById('conversationWindow');
+    if (conversationWindow) {
+        conversationWindow.innerText += text + '\n';
+        conversationWindow.scrollTop = conversationWindow.scrollHeight;
+    } else {
+        console.error('Conversation window element not found');
+    }
 }
 
 function textToSpeech(text) {
@@ -286,6 +294,8 @@ document.getElementById('submitEndOfEveryPromptEdit').addEventListener('click', 
     processEndOfEveryPromptEdit(userInput);
 });
 
+
+
 function processEndOfEveryPromptEdit(userInput) {
     // Predefined introduction text explaining the purpose of the text
     let introText = "This is the text of a set of custom instructions for an implementation of GPT-4:\n";
@@ -356,10 +366,11 @@ webSocket.onclose = function(event) {
 
 
 // Event Listener for User Input
+
 sendTextButton.addEventListener('click', () => {
     const userInput = document.getElementById('textInput').value;
     if (userInput) {
-        sendUserInputToChat(userInput);
+        queryGPT35Turbo(userInput); // This now sends to the Glitch server
         document.getElementById('textInput').value = ''; // Clear the input field
     }
 });
@@ -418,3 +429,23 @@ function updateConversationWindow(text) {
         console.error('Conversation window element not found');
     }
 }
+
+sse.onmessage = (event) => {
+    // Handle incoming data
+    const data = JSON.parse(event.data);
+    handleStreamedData(data);
+};
+
+sse.onerror = (error) => {
+    console.error('SSE Error:', error);
+    // Handle any errors that occur
+};
+
+function handleStreamedData(data) {
+    // Assuming 'data' contains the response from OpenAI
+    if (data.response) {
+        updateConversationWindow(data.response);
+        textToSpeech(data.response);
+    }
+}
+
