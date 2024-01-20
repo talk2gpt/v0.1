@@ -182,8 +182,6 @@ function processTTSQueue() {
 
 function saveConversationToGist(conversationText) {
     const gistData = {
-        description: "Chat Conversation History",
-        public: false,
         files: {
             "conversation.txt": {
                 content: conversationText
@@ -191,11 +189,8 @@ function saveConversationToGist(conversationText) {
         }
     };
 
-    const method = gistId ? 'PATCH' : 'POST';
-    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
-
-    fetch(url, {
-        method: method,
+    fetch(`https://api.github.com/gists/${gistId}`, {
+        method: 'PATCH',
         headers: {
             'Authorization': `token ${githubToken}`,
             'Content-Type': 'application/json'
@@ -205,16 +200,14 @@ function saveConversationToGist(conversationText) {
     .then(response => response.json())
     .then(data => {
         if (data && data.id) {
-            gistId = data.id; // Update the gistId with the latest ID
             console.log('Gist updated successfully:', data);
         } else {
             throw new Error('Failed to update Gist');
         }
     })
-    .catch(error => {
-        console.error('Error updating Gist:', error);
-    });
+    .catch(error => console.error('Error updating Gist:', error));
 }
+
 
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
