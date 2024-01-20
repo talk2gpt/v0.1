@@ -372,7 +372,7 @@ function handleStreamedData(data) {
     if (data.message) {
         accumulatedText += data.message;
         accumulatedAIResponse += data.message; // Accumulate AI response
-        if (/[.,?!]\s*$/.test(accumulatedText)) {
+        if (/[.?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
             updateConversationWindow(accumulatedText);
             accumulatedText = '';
