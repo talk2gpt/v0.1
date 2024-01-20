@@ -9,7 +9,7 @@ let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObun
 let recordingInterval;
 let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-//nbvnnnniiiiaaaa
+//nbv
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -338,21 +338,24 @@ function processEndOfEveryPromptEdit(userInput) {
 
 
 sse.onmessage = (event) => {
-    // Handle incoming data
+    // Parse the incoming event data
     const data = JSON.parse(event.data);
+
+    // Handle the streamed data
     handleStreamedData(data);
 };
 
 sse.onerror = (error) => {
     console.error('SSE Error:', error);
-    // Handle any errors that occur
 };
 
 function handleStreamedData(data) {
-    // Assuming 'data' contains the response from OpenAI
-    if (data.response) {
-        updateConversationWindow(data.response);
-        textToSpeech(data.response);
+    // Check if the data contains a message
+    if (data.message) {
+        // Append the received message to the conversation window
+        updateConversationWindow(data.message);
+
+        // Use text to speech for the received message
+        textToSpeech(data.message);
     }
 }
-
