@@ -135,6 +135,7 @@ function queryGPT35Turbo(text) {
     .catch(error => {
         console.error('Error sending message to Glitch server:', error);
     });
+    saveConversationToGist(conversationContext);
 }
 
 // Utility function to update the conversation window
@@ -361,26 +362,16 @@ sse.onerror = (error) => {
 
 function handleStreamedData(data) {
     if (data.message) {
-        // Accumulate the message
         accumulatedText += data.message;
-
-        // Update conversation window for each chunk
-        updateConversationWindow(data.message);
-
-        // Queue TTS request for sentence fragments
         if (/[.?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
+            updateConversationWindow(accumulatedText);
             accumulatedText = '';
+            // Call saveConversationToGist after AI's complete response
+            saveConversationToGist(conversationContext);
         }
     }
-
-    // Check if it's the end of the AI response
-    if (data.end_of_response) {
-        conversationContext += 'AI: ' + accumulatedText + '\n';
-        saveConversationToGist(conversationContext);  // Save the entire conversation after AI response
-    }
 }
-
 
 function queueTTSRequest(text) {
     ttsQueue.push(text);
