@@ -135,10 +135,14 @@ function queryGPT35Turbo(text) {
 }
 
 // Utility function to update the conversation window
-function updateConversationWindow(text) {
+function updateConversationWindow(text, isUser) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += text + '\n';
+        if (isUser) {
+            conversationWindow.innerText += '\nUser: ' + text + '\n';
+        } else {
+            conversationWindow.innerText += '\nAI: ' + text + '\n';
+        }
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
@@ -147,7 +151,7 @@ function updateConversationWindow(text) {
 
 function textToSpeech(text) {
     ttsQueue.push(text);
-    if (ttsQueue.length === 1 && !isPlayingAudio) {
+    if (!isPlayingAudio) {
         processTTSQueue();
     }
 }
@@ -170,20 +174,19 @@ function processTTSQueue() {
         .then(response => response.blob())
         .then(blob => {
             const audioUrl = URL.createObjectURL(blob);
-            playAudio(audioUrl);
+            queueAudio(audioUrl);
         })
         .catch(error => console.error('TTS Error:', error));
     }
 }
 
-
-function saveConversationToGist(text) {
+function saveConversationToGist(conversationText) {
     const gistData = {
         description: "Chat Conversation History",
         public: false,
         files: {
             "conversation.txt": {
-                content: text
+                content: conversationText
             }
         }
     };
@@ -201,9 +204,16 @@ function saveConversationToGist(text) {
     })
     .then(response => response.json())
     .then(data => {
-        gistId = data.id;
+        if (data && data.id) {
+            gistId = data.id; // Update the gistId with the latest ID
+            console.log('Gist updated successfully:', data);
+        } else {
+            throw new Error('Failed to update Gist');
+        }
     })
-    .catch(error => console.error('Error saving Gist:', error));
+    .catch(error => {
+        console.error('Error updating Gist:', error);
+    });
 }
 
 function updateConversationWindow(text) {
@@ -365,13 +375,17 @@ sse.onerror = (error) => {
 
 function handleStreamedData(data) {
     if (data.message) {
-        textToSpeech(data.message);
+        const isUser = data.role === 'user';
+        updateConversationWindow(data.message, isUser);
+        if (!isUser) {
+            textToSpeech(data.message);
+        }
         conversationContext += data.message + '\n\n';
-        updateConversationWindow(data.message);
-        saveConversationToGist(conversationContext);
+        if (data.end_of_message) {
+            saveConversationToGist(conversationContext);
+        }
     }
 }
-
 
 function queueAudio(audioUrl) {
     audioQueue.push(audioUrl);
@@ -379,6 +393,7 @@ function queueAudio(audioUrl) {
         playNextAudio();
     }
 }
+
 
 function playNextAudio() {
     if (audioQueue.length > 0) {
@@ -388,6 +403,7 @@ function playNextAudio() {
         audio.play();
         audio.onended = () => {
             isPlayingAudio = false;
+            ttsQueue.shift(); // Remove processed text from TTS queue
             playNextAudio();
         };
     }
