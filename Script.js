@@ -12,7 +12,7 @@ const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 let audioQueue = [];
 let isPlayingAudio = false;
 let ttsQueue = [];
-//nbvaaaattn
+//nbvakkkkkaaattn
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -151,7 +151,7 @@ function updateConversationWindow(text, isUser) {
 
 function textToSpeech(text) {
     ttsQueue.push(text);
-    if (!isPlayingAudio) {
+    if (ttsQueue.length === 1 && !isPlayingAudio) {
         processTTSQueue();
     }
 }
@@ -174,11 +174,12 @@ function processTTSQueue() {
         .then(response => response.blob())
         .then(blob => {
             const audioUrl = URL.createObjectURL(blob);
-            queueAudio(audioUrl);
+            playAudio(audioUrl);
         })
         .catch(error => console.error('TTS Error:', error));
     }
 }
+
 
 function saveConversationToGist(conversationText) {
     const gistData = {
@@ -212,13 +213,13 @@ function saveConversationToGist(conversationText) {
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += '\n\n' + text;
+        // Append new text without a newline
+        conversationWindow.innerText += text;
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
     }
 }
-
 
 
 function loadConversationFromGist(gistId) {
@@ -355,11 +356,13 @@ function processEndOfEveryPromptEdit(userInput) {
 
 
 sse.onmessage = (event) => {
-    // Parse the incoming event data
     const data = JSON.parse(event.data);
-
-    // Handle the streamed data
-    handleStreamedData(data);
+    if (data.message) {
+        textToSpeech(data.message);
+        conversationContext += data.message;
+        updateConversationWindow(data.message);
+        saveConversationToGist(conversationContext);
+    }
 };
 
 sse.onerror = (error) => {
