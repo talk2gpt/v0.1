@@ -9,9 +9,9 @@ let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObun
 let recordingInterval;
 let endOfEveryPromptText = '';
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-let accumulatedText = '';
 let audioQueue = [];
 let isPlayingAudio = false;
+let ttsQueue = [];
 //nbvaaaa
 
 // Call this function with the appropriate gist ID when the page loads
@@ -146,34 +146,44 @@ function updateConversationWindow(text) {
 }
 
 function textToSpeech(text) {
-    fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'tts-1',
-            input: text,
-            voice: 'shimmer'
+    ttsQueue.push(text);
+    if (ttsQueue.length === 1 && !isPlayingAudio) {
+        processTTSQueue();
+    }
+}
+
+function processTTSQueue() {
+    if (ttsQueue.length > 0) {
+        const text = ttsQueue[0];
+        fetch('https://api.openai.com/v1/audio/speech', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'tts-1',
+                input: text,
+                voice: 'shimmer'
+            })
         })
-    })
-    .then(response => response.blob())
-    .then(blob => {
-        const audioUrl = URL.createObjectURL(blob);
-        queueAudio(audioUrl);
-    })
-    .catch(error => console.error('TTS Error:', error));
+        .then(response => response.blob())
+        .then(blob => {
+            const audioUrl = URL.createObjectURL(blob);
+            playAudio(audioUrl);
+        })
+        .catch(error => console.error('TTS Error:', error));
+    }
 }
 
 
-function saveConversationToGist(conversationText) {
+function saveConversationToGist(text) {
     const gistData = {
         description: "Chat Conversation History",
         public: false,
         files: {
             "conversation.txt": {
-                content: conversationText
+                content: text
             }
         }
     };
@@ -192,7 +202,6 @@ function saveConversationToGist(conversationText) {
     .then(response => response.json())
     .then(data => {
         gistId = data.id;
-        console.log('Gist saved:', data);
     })
     .catch(error => console.error('Error saving Gist:', error));
 }
@@ -200,12 +209,13 @@ function saveConversationToGist(conversationText) {
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += text;
+        conversationWindow.innerText += '\n\n' + text;
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
     }
 }
+
 
 
 function loadConversationFromGist(gistId) {
@@ -355,14 +365,13 @@ sse.onerror = (error) => {
 
 function handleStreamedData(data) {
     if (data.message) {
-        accumulatedText += data.message;
-        if (/[.,?!]\s*$/.test(accumulatedText)) {
-            textToSpeech(accumulatedText);
-            updateConversationWindow(accumulatedText);
-            accumulatedText = '';
-        }
+        textToSpeech(data.message);
+        conversationContext += data.message + '\n\n';
+        updateConversationWindow(data.message);
+        saveConversationToGist(conversationContext);
     }
 }
+
 
 function queueAudio(audioUrl) {
     audioQueue.push(audioUrl);
@@ -382,4 +391,15 @@ function playNextAudio() {
             playNextAudio();
         };
     }
+}
+
+function playAudio(audioUrl) {
+    const audio = new Audio(audioUrl);
+    isPlayingAudio = true;
+    audio.play();
+    audio.onended = () => {
+        isPlayingAudio = false;
+        ttsQueue.shift();
+        processTTSQueue();
+    };
 }
