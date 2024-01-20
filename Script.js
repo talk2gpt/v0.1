@@ -1,15 +1,18 @@
 let mediaRecorder;
 let audioChunks = [];
-let conversationContext = ''; // To maintain conversation context
-const talkButton = document.getElementById('talkButton'); // Reference to the talk button
+let conversationContext = '';
+const talkButton = document.getElementById('talkButton');
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
-let gistId = '319efc519c6a17699365d23874099a78'; // This will store the ID of the gist we're using
+let gistId = '319efc519c6a17699365d23874099a78';
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
-let endOfEveryPromptText = ''; // This will hold the text to be appended at the end of every prompt
+let endOfEveryPromptText = '';
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-//nbv
+let accumulatedText = '';
+let audioQueue = [];
+let isPlayingAudio = false;
+//nbvaaaa
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -158,11 +161,11 @@ function textToSpeech(text) {
     .then(response => response.blob())
     .then(blob => {
         const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        audio.play();
+        queueAudio(audioUrl);
     })
     .catch(error => console.error('TTS Error:', error));
 }
+
 
 function saveConversationToGist(conversationText) {
     const gistData = {
@@ -197,12 +200,13 @@ function saveConversationToGist(conversationText) {
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += text + '\n'; // Append new text
-        conversationWindow.scrollTop = conversationWindow.scrollHeight; // Auto-scroll to the latest message
+        conversationWindow.innerText += text;
+        conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
     }
 }
+
 
 function loadConversationFromGist(gistId) {
     fetch(`https://api.github.com/gists/${gistId}`, {
@@ -350,12 +354,32 @@ sse.onerror = (error) => {
 };
 
 function handleStreamedData(data) {
-    // Check if the data contains a message
     if (data.message) {
-        // Append the received message to the conversation window
-        updateConversationWindow(data.message);
+        accumulatedText += data.message;
+        if (/[.,?!]\s*$/.test(accumulatedText)) {
+            textToSpeech(accumulatedText);
+            updateConversationWindow(accumulatedText);
+            accumulatedText = '';
+        }
+    }
+}
 
-        // Use text to speech for the received message
-        textToSpeech(data.message);
+function queueAudio(audioUrl) {
+    audioQueue.push(audioUrl);
+    if (!isPlayingAudio) {
+        playNextAudio();
+    }
+}
+
+function playNextAudio() {
+    if (audioQueue.length > 0) {
+        const audioUrl = audioQueue.shift();
+        const audio = new Audio(audioUrl);
+        isPlayingAudio = true;
+        audio.play();
+        audio.onended = () => {
+            isPlayingAudio = false;
+            playNextAudio();
+        };
     }
 }
