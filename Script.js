@@ -12,7 +12,7 @@ const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 let audioQueue = [];
 let isPlayingAudio = false;
 let ttsQueue = [];
-//nbvaaaatt
+//nbvaaaattn
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
