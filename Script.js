@@ -84,7 +84,7 @@ function processAudioChunk(audioBlob) {
     .then(data => {
         let transcribedText = data.text;
         conversationContext += 'User: ' + transcribedText + '\n';
-        updateConversationWindow(transcribedText);
+        updateConversationWindow(conversationContext);
     })
     .catch(error => console.error('Error:', error));
 }
@@ -96,7 +96,6 @@ function processFullConversation() {
 function queryGPT35Turbo(text) {
     // Add user's input to the conversation context for display and storage
     conversationContext += 'User: ' + text + '\n';
-    updateConversationWindow('User: ' + text);
 
     // Split the conversation context into messages
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
@@ -241,6 +240,7 @@ const sendTextButton = document.getElementById('sendTextButton');
 sendTextButton.addEventListener('click', () => {
     const userInput = document.getElementById('textInput').value;
     if (userInput) {
+        updateConversationWindow('User: ' + userInput + '\n');
         queryGPT35Turbo(userInput);
         document.getElementById('textInput').value = '';
     }
