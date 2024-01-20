@@ -1,6 +1,7 @@
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = '';
+let accumulatedAIResponse = '';
 const talkButton = document.getElementById('talkButton');
 const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
@@ -15,7 +16,7 @@ let isProcessingTTS = false;
 let audioQueue = [];
 let isPlayingAudio = false;
 
-//nbvddcc
+//nbvcddcc
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -93,19 +94,21 @@ function processFullConversation() {
     queryGPT35Turbo(conversationContext);
 }
 
-function queryGPT35Turbo(text) {
+function queryGPT35Turbo(text, callback) {
     // Add user's input to the conversation context for display
     conversationContext += 'User: ' + text + '\n';
     updateConversationWindow('User: ' + text);
 
     // Split the conversation context into messages
-    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
-        let [role, ...content] = line.split(': ');
-        return {
-            role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
-            content: content.join(': ')
-        };
-    });
+    let messages = conversationContext.split('\n')
+        .filter(line => line.trim() !== '')
+        .map(line => {
+            let [role, ...content] = line.split(': ');
+            return {
+                role: role.trim().toLowerCase() === 'user' ? 'user' : 'system',
+                content: content.join(': ')
+            };
+        });
 
     // Append the 'End of Every Prompt' content to the last user message
     if (endOfEveryPromptText && messages.length > 0 && messages[messages.length - 1].role === 'user') {
@@ -131,9 +134,11 @@ function queryGPT35Turbo(text) {
             throw new Error('Network response was not ok');
         }
         // Optionally handle the immediate response from the server if needed
+        if (callback) callback();
     })
     .catch(error => {
         console.error('Error sending message to Glitch server:', error);
+        if (callback) callback();
     });
 }
 
@@ -174,7 +179,7 @@ function textToSpeech(text, callback) {
 }
 
 
-function saveConversationToGist(conversationText) {
+function saveConversationToGist(conversationText, callback) {
     const gistData = {
         description: "Chat Conversation History",
         public: false,
@@ -200,8 +205,12 @@ function saveConversationToGist(conversationText) {
     .then(data => {
         gistId = data.id;
         console.log('Gist saved:', data);
+        if (callback) callback(); // Execute callback if provided
     })
-    .catch(error => console.error('Error saving Gist:', error));
+    .catch(error => {
+        console.error('Error saving Gist:', error);
+        if (callback) callback();
+    });
 }
 
 function updateConversationWindow(text) {
@@ -362,13 +371,20 @@ sse.onerror = (error) => {
 function handleStreamedData(data) {
     if (data.message) {
         accumulatedText += data.message;
+        accumulatedAIResponse += data.message; // Accumulate AI response
         if (/[.,?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
             updateConversationWindow(accumulatedText);
             accumulatedText = '';
         }
+        if (data.isFinal) { // Check if this is the final chunk of AI response
+            conversationContext += 'AI: ' + accumulatedAIResponse + '\n';
+            saveConversationToGist(conversationContext); // Update Gist after the full AI response
+            accumulatedAIResponse = ''; // Reset accumulated AI response
+        }
     }
 }
+
 
 function queueTTSRequest(text) {
     ttsQueue.push(text);
