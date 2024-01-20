@@ -10,10 +10,12 @@ let recordingInterval;
 let endOfEveryPromptText = '';
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 let accumulatedText = '';
+let ttsQueue = [];
+let isProcessingTTS = false;
 let audioQueue = [];
 let isPlayingAudio = false;
 
-//nbv
+//nbvddcc
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -146,7 +148,7 @@ function updateConversationWindow(text) {
     }
 }
 
-function textToSpeech(text) {
+function textToSpeech(text, callback) {
     fetch('https://api.openai.com/v1/audio/speech', {
         method: 'POST',
         headers: {
@@ -163,9 +165,14 @@ function textToSpeech(text) {
     .then(blob => {
         const audioUrl = URL.createObjectURL(blob);
         queueAudio(audioUrl);
+        callback();
     })
-    .catch(error => console.error('TTS Error:', error));
+    .catch(error => {
+        console.error('TTS Error:', error);
+        callback();
+    });
 }
+
 
 function saveConversationToGist(conversationText) {
     const gistData = {
@@ -356,10 +363,28 @@ function handleStreamedData(data) {
     if (data.message) {
         accumulatedText += data.message;
         if (/[.,?!]\s*$/.test(accumulatedText)) {
-            textToSpeech(accumulatedText);
+            queueTTSRequest(accumulatedText);
             updateConversationWindow(accumulatedText);
             accumulatedText = '';
         }
+    }
+}
+
+function queueTTSRequest(text) {
+    ttsQueue.push(text);
+    if (!isProcessingTTS) {
+        processNextTTSRequest();
+    }
+}
+
+function processNextTTSRequest() {
+    if (ttsQueue.length > 0) {
+        isProcessingTTS = true;
+        const text = ttsQueue.shift();
+        textToSpeech(text, () => {
+            isProcessingTTS = false;
+            processNextTTSRequest();
+        });
     }
 }
 
