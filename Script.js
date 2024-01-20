@@ -366,9 +366,9 @@ function handleStreamedData(data) {
         if (/[.?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
             updateConversationWindow(accumulatedText);
+            saveConversationToGist(accumulatedText);
             accumulatedText = '';
             // Call saveConversationToGist after AI's complete response
-            saveConversationToGist(conversationContext);
         }
     }
 }
