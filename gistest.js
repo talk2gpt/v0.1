@@ -14,7 +14,7 @@ function saveConversationToGist(conversationText) {
         description: "Test Gist Update",
         public: false,
         files: {
-            "test.txt": {
+            "conversation.txt": {
                 content: conversationText
             }
         }
