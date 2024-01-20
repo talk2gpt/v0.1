@@ -9,10 +9,11 @@ let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObun
 let recordingInterval;
 let endOfEveryPromptText = '';
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
+let accumulatedText = '';
 let audioQueue = [];
 let isPlayingAudio = false;
-let ttsQueue = [];
-//nbvakkkkkaaattn
+
+//nbv
 
 // Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
@@ -135,14 +136,10 @@ function queryGPT35Turbo(text) {
 }
 
 // Utility function to update the conversation window
-function updateConversationWindow(text, isUser) {
+function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        if (isUser) {
-            conversationWindow.innerText += '\nUser: ' + text + '\n';
-        } else {
-            conversationWindow.innerText += '\nAI: ' + text + '\n';
-        }
+        conversationWindow.innerText += text + '\n';
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
@@ -150,39 +147,30 @@ function updateConversationWindow(text, isUser) {
 }
 
 function textToSpeech(text) {
-    ttsQueue.push(text);
-    if (ttsQueue.length === 1 && !isPlayingAudio) {
-        processTTSQueue();
-    }
-}
-
-function processTTSQueue() {
-    if (ttsQueue.length > 0) {
-        const text = ttsQueue[0];
-        fetch('https://api.openai.com/v1/audio/speech', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                model: 'tts-1',
-                input: text,
-                voice: 'shimmer'
-            })
+    fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'tts-1',
+            input: text,
+            voice: 'shimmer'
         })
-        .then(response => response.blob())
-        .then(blob => {
-            const audioUrl = URL.createObjectURL(blob);
-            playAudio(audioUrl);
-        })
-        .catch(error => console.error('TTS Error:', error));
-    }
+    })
+    .then(response => response.blob())
+    .then(blob => {
+        const audioUrl = URL.createObjectURL(blob);
+        queueAudio(audioUrl);
+    })
+    .catch(error => console.error('TTS Error:', error));
 }
-
 
 function saveConversationToGist(conversationText) {
     const gistData = {
+        description: "Chat Conversation History",
+        public: false,
         files: {
             "conversation.txt": {
                 content: conversationText
@@ -190,8 +178,11 @@ function saveConversationToGist(conversationText) {
         }
     };
 
-    fetch(`https://api.github.com/gists/${gistId}`, {
-        method: 'PATCH',
+    const method = gistId ? 'PATCH' : 'POST';
+    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
         headers: {
             'Authorization': `token ${githubToken}`,
             'Content-Type': 'application/json'
@@ -200,27 +191,21 @@ function saveConversationToGist(conversationText) {
     })
     .then(response => response.json())
     .then(data => {
-        if (data && data.id) {
-            console.log('Gist updated successfully:', data);
-        } else {
-            throw new Error('Failed to update Gist');
-        }
+        gistId = data.id;
+        console.log('Gist saved:', data);
     })
-    .catch(error => console.error('Error updating Gist:', error));
+    .catch(error => console.error('Error saving Gist:', error));
 }
-
 
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        // Append new text without a newline
         conversationWindow.innerText += text;
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
         console.error('Conversation window element not found');
     }
 }
-
 
 function loadConversationFromGist(gistId) {
     fetch(`https://api.github.com/gists/${gistId}`, {
@@ -356,13 +341,11 @@ function processEndOfEveryPromptEdit(userInput) {
 
 
 sse.onmessage = (event) => {
+    // Parse the incoming event data
     const data = JSON.parse(event.data);
-    if (data.message) {
-        textToSpeech(data.message);
-        conversationContext += data.message;
-        updateConversationWindow(data.message);
-        saveConversationToGist(conversationContext);
-    }
+
+    // Handle the streamed data
+    handleStreamedData(data);
 };
 
 sse.onerror = (error) => {
@@ -371,14 +354,11 @@ sse.onerror = (error) => {
 
 function handleStreamedData(data) {
     if (data.message) {
-        const isUser = data.role === 'user';
-        updateConversationWindow(data.message, isUser);
-        if (!isUser) {
-            textToSpeech(data.message);
-        }
-        conversationContext += data.message + '\n\n';
-        if (data.end_of_message) {
-            saveConversationToGist(conversationContext);
+        accumulatedText += data.message;
+        if (/[.,?!]\s*$/.test(accumulatedText)) {
+            textToSpeech(accumulatedText);
+            updateConversationWindow(accumulatedText);
+            accumulatedText = '';
         }
     }
 }
@@ -390,7 +370,6 @@ function queueAudio(audioUrl) {
     }
 }
 
-
 function playNextAudio() {
     if (audioQueue.length > 0) {
         const audioUrl = audioQueue.shift();
@@ -399,19 +378,7 @@ function playNextAudio() {
         audio.play();
         audio.onended = () => {
             isPlayingAudio = false;
-            ttsQueue.shift(); // Remove processed text from TTS queue
             playNextAudio();
         };
     }
-}
-
-function playAudio(audioUrl) {
-    const audio = new Audio(audioUrl);
-    isPlayingAudio = true;
-    audio.play();
-    audio.onended = () => {
-        isPlayingAudio = false;
-        ttsQueue.shift();
-        processTTSQueue();
-    };
 }
