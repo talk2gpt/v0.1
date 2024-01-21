@@ -1,45 +1,39 @@
-// Global Variables
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = '';
-let accumulatedText = '';
-let ttsQueue = [];
-let isProcessingTTS = false;
-let audioQueue = [];
-let isPlayingAudio = false;
 const talkButton = document.getElementById('talkButton');
-const encodedKey = "c2stWXNFN204clN6VmNjb1RzMjJEMmhUM0JsYmtGSjNZWTV0M3JLWG5JSDZoY0tkNHhP";
+const encodedKey = "c2stRFVJMDBBZXVZQ3BOVFc0dGRiTXNUM0JsYmtGSmJOZ3FNazRFdG02SWxxblFLMEwx";
 const apiKey = atob(encodedKey);
 let gistId = '319efc519c6a17699365d23874099a78';
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 let endOfEveryPromptText = '';
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-//wrebyfvewuyuyy
+let accumulatedText = '';
+let ttsQueue = [];
+let isProcessingTTS = false;
+let audioQueue = [];
+let isPlayingAudio = false;
 
-// Load and Display End of Every Prompt Gist
+//nbvddccufdfuuuc
+
+// Call this function with the appropriate gist ID when the page loads
 window.addEventListener('load', () => {
     loadEndOfEveryPromptFromGist(gistId);
 });
 
-// Event Listeners
-talkButton.addEventListener('click', handleTalkButtonClick);
-const sendTextButton = document.getElementById('sendTextButton');
-sendTextButton.addEventListener('click', handleSendTextButtonClick);
-document.getElementById('submitEndOfEveryPromptEdit').addEventListener('click', handleSubmitEndOfEveryPromptEdit);
-
-// Server-Sent Events Handlers
-sse.onmessage = handleStreamedData;
-sse.onerror = (error) => console.error('SSE Error:', error);
-
-// Core Functionalities
-function handleTalkButtonClick() {
+talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         stopRecording();
+        talkButton.classList.remove('stop');
+        talkButton.textContent = 'Push to Talk';
+        processFullConversation();
     } else {
         startRecording();
+        talkButton.classList.add('stop');
+        talkButton.textContent = 'Stop';
     }
-}
+});
 
 function startRecording() {
     navigator.mediaDevices.getUserMedia({ audio: true })
@@ -143,56 +137,14 @@ function queryGPT35Turbo(text) {
     saveConversationToGist(conversationContext);
 }
 
-function handleStreamedData(data) {
-    if (data.message) {
-        accumulatedText += data.message;
-        if (/[.?!]\s*$/.test(accumulatedText)) {
-            queueTTSRequest(accumulatedText);
-            conversationContextb = '';
-            conversationContextb += 'AI: ' + accumulatedText + '\n';
-            updateConversationWindow(conversationContextb);
-            saveConversationToGist(conversationContextb);
-            accumulatedText = '';
-            // Call saveConversationToGist after AI's complete response
-        }
-    }
-}
-
-function queueTTSRequest(text) {
-    ttsQueue.push(text);
-    if (!isProcessingTTS) {
-        processNextTTSRequest();
-    }
-}
-
-function processNextTTSRequest() {
-    if (ttsQueue.length > 0) {
-        isProcessingTTS = true;
-        const text = ttsQueue.shift();
-        textToSpeech(text, () => {
-            isProcessingTTS = false;
-            processNextTTSRequest();
-        });
-    }
-}
-
-function queueAudio(audioUrl) {
-    audioQueue.push(audioUrl);
-    if (!isPlayingAudio) {
-        playNextAudio();
-    }
-}
-
-function playNextAudio() {
-    if (audioQueue.length > 0) {
-        const audioUrl = audioQueue.shift();
-        const audio = new Audio(audioUrl);
-        isPlayingAudio = true;
-        audio.play();
-        audio.onended = () => {
-            isPlayingAudio = false;
-            playNextAudio();
-        };
+// Utility function to update the conversation window
+function updateConversationWindow(text) {
+    const conversationWindow = document.getElementById('conversationWindow');
+    if (conversationWindow) {
+        conversationWindow.innerText += text + '\n';
+        conversationWindow.scrollTop = conversationWindow.scrollHeight;
+    } else {
+        console.error('Conversation window element not found');
     }
 }
 
@@ -221,18 +173,80 @@ function textToSpeech(text, callback) {
     });
 }
 
-// Update Conversation Window
+
+function saveConversationToGist(conversationText) {
+    const gistData = {
+        description: "Chat Conversation History",
+        public: false,
+        files: {
+            "conversation.txt": {
+                content: conversationText
+            }
+        }
+    };
+
+    const method = gistId ? 'PATCH' : 'POST';
+    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+
+    fetch(url, {
+        method: method,
+        headers: {
+            'Authorization': `token ${githubToken}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(gistData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        gistId = data.id;
+        console.log('Gist saved:', data);
+    })
+    .catch(error => console.error('Error saving Gist:', error));
+}
+
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += text + '\n';
+        conversationWindow.innerText += text;
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
-        console.error('Conversttion window element not found');
+        console.error('Conversation window element not found');
     }
 }
 
-// GitHub Gist Integration
+function loadConversationFromGist(gistId) {
+    fetch(`https://api.github.com/gists/${gistId}`, {
+        headers: {
+            'Authorization': `token ${githubToken}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        conversationContext = data.files['conversation.txt'].content;
+        updateConversationWindow(conversationContext);
+        console.log('Gist loaded:', data);
+    })
+    .catch(error => console.error('Error loading Gist:', error));
+}
+
+loadConversationFromGist(gistId); // Call this function when the page loads
+
+function decodeString(encodedStr) {
+    return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
+}
+
+const sendTextButton = document.getElementById('sendTextButton');
+
+sendTextButton.addEventListener('click', () => {
+    const userInput = document.getElementById('textInput').value;
+    if (userInput) {
+        updateConversationWindow('User: ' + userInput + '\n');
+        queryGPT35Turbo(userInput);
+        document.getElementById('textInput').value = '';
+    }
+});
+
+// Function to load and display text from the 'End of Every Prompt' gist
 function loadEndOfEveryPromptFromGist(gistId) {
     fetch(`https://api.github.com/gists/${gistId}`)
         .then(response => response.json())
@@ -286,19 +300,12 @@ function saveEndOfEveryPromptToGist(updatedText) {
     });
 }
 
-function handleSendTextButtonClick() {
-    const userInput = document.getElementById('textInput').value;
-    if (userInput) {
-        updateConversationWindow('User: ' + userInput + '\n');
-        queryGPT35Turbo(userInput);
-        document.getElementById('textInput').value = '';
-    }
-}
-
-function handleSubmitEndOfEveryPromptEdit() {
+document.getElementById('submitEndOfEveryPromptEdit').addEventListener('click', () => {
     let userInput = document.getElementById('endOfEveryPromptInput').value;
     processEndOfEveryPromptEdit(userInput);
-}
+});
+
+
 
 function processEndOfEveryPromptEdit(userInput) {
     // Predefined introduction text explaining the purpose of the text
@@ -340,6 +347,68 @@ function processEndOfEveryPromptEdit(userInput) {
     });
 }
 
-function decodeString(encodedStr) {
-    return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
+
+sse.onmessage = (event) => {
+    // Parse the incoming event data
+    const data = JSON.parse(event.data);
+
+    // Handle the streamed data
+    handleStreamedData(data);
+};
+
+sse.onerror = (error) => {
+    console.error('SSE Error:', error);
+};
+
+function handleStreamedData(data) {
+    if (data.message) {
+        accumulatedText += data.message;
+        if (/[.?!]\s*$/.test(accumulatedText)) {
+            queueTTSRequest(accumulatedText);
+            conversationContextb = '';
+            conversationContextb += 'AI: ' + accumulatedText + '\n';
+            updateConversationWindow(conversationContextb);
+            saveConversationToGist(conversationContextb);
+            accumulatedText = '';
+            // Call saveConversationToGist after AI's complete response
+        }
+    }
+}
+
+function queueTTSRequest(text) {
+    ttsQueue.push(text);
+    if (!isProcessingTTS) {
+        processNextTTSRequest();
+    }
+}
+
+function processNextTTSRequest() {
+    if (ttsQueue.length > 0) {
+        isProcessingTTS = true;
+        const text = ttsQueue.shift();
+        textToSpeech(text, () => {
+            isProcessingTTS = false;
+            processNextTTSRequest();
+        });
+    }
+}
+
+function queueAudio(audioUrl) {
+    audioQueue.push(audioUrl);
+    if (!isPlayingAudio) {
+        playNextAudio();
+    }
+}
+
+function playNextAudio() {
+    if (audioQueue.length > 0) {
+        const audioUrl = audioQueue.shift();
+        const audio = new Audio(audioUrl);
+        isPlayingAudio = true;
+        audio.play();
+        audio.onended = () => {
+            isPlayingAudio = false;
+            playNextAudio();
+        };
+    }
 }
