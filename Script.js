@@ -224,13 +224,10 @@ function textToSpeech(text, callback) {
 function updateConversationWindow(text) {
     const conversationWindow = document.getElementById('conversationWindow');
     if (conversationWindow) {
-        conversationWindow.innerText += text;
+        conversationWindow.innerText += text + '\n';
         conversationWindow.scrollTop = conversationWindow.scrollHeight;
     } else {
-        console.error('Conversation window element not found');
-    }
-} else {
-        console.error('Conversation window element not found');
+        console.error('Conversttion window element not found');
     }
 }
 
