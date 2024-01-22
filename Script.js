@@ -15,7 +15,6 @@
 // 'isPlayingAudio' indicates if an audio is currently being played.
 // 'gistId', 'githubToken', 'apiKey', and 'encodedKey' are used for API interactions.
 // 'sse' initializes a new EventSource that listens to server-sent events.
-
 let mediaRecorder;
 let audioChunks = [];
 let conversationContext = '';
@@ -77,6 +76,7 @@ sse.onerror = (error) => {
 
 // startRecording: Initializes the media recorder and handles the audio stream. It sets up intervals to manage audio chunking.
 function startRecording() {
+    console.log("Starting audio recording");
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -100,6 +100,7 @@ function startRecording() {
 
 // stopRecording: Stops the media recorder and clears the recording interval.
 function stopRecording() {
+    console.log("Stopping audio recording");
     clearInterval(recordingInterval);
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
@@ -108,6 +109,7 @@ function stopRecording() {
 
 // processAudioChunk: Processes each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
 function processAudioChunk(audioBlob) {
+    console.log("Processing audio chunk");
     let audioFile = new File([audioBlob], "recording.mp3", {
         type: "audio/mp3",
     });
@@ -126,6 +128,7 @@ function processAudioChunk(audioBlob) {
     .then(response => response.json())
     .then(data => {
         let transcribedText = data.text;
+        console.log("Received transcription:", transcribedText);
         conversationContext += 'User: ' + transcribedText + '\n';
         updateConversationWindow(conversationContext);
     })
@@ -134,11 +137,13 @@ function processAudioChunk(audioBlob) {
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
 function processFullConversation() {
+    console.log("Processing full conversation");
     queryGPT35Turbo(conversationContext);
 }
 
 // queryGPT35Turbo: Sends the current conversation context to GPT-3.5 Turbo for processing and appends the AI's response to the conversation.
 function queryGPT35Turbo(text) {
+    console.log("Querying GPT-3.5 Turbo with text:", text);
     // Add user's input to the conversation context for display and storage
     conversationContext += 'User: ' + text + '\n';
 
@@ -174,6 +179,7 @@ function queryGPT35Turbo(text) {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
+        console.log("Message sent to GPT endpoint");
         // Optionally handle the immediate response from the server if needed
     })
     .catch(error => {
