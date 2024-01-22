@@ -76,7 +76,6 @@ sse.onerror = (error) => {
 
 // startRecording: Initializes the media recorder and handles the audio stream. It sets up intervals to manage audio chunking.
 function startRecording() {
-    console.log("Starting audio recording");
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(stream => {
             mediaRecorder = new MediaRecorder(stream);
@@ -100,7 +99,6 @@ function startRecording() {
 
 // stopRecording: Stops the media recorder and clears the recording interval.
 function stopRecording() {
-    console.log("Stopping audio recording");
     clearInterval(recordingInterval);
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
@@ -128,8 +126,9 @@ function processAudioChunk(audioBlob) {
     .then(response => response.json())
     .then(data => {
         let transcribedText = data.text;
-        console.log("Received transcription:", transcribedText);
+        console.log("Transcription received:", transcribedText);
         conversationContext += 'User: ' + transcribedText + '\n';
+        console.log("Appended to conversation context:", conversationContext);
         updateConversationWindow(conversationContext);
     })
     .catch(error => console.error('Error:', error));
@@ -146,6 +145,7 @@ function queryGPT35Turbo(text) {
     console.log("Querying GPT-3.5 Turbo with text:", text);
     // Add user's input to the conversation context for display and storage
     conversationContext += 'User: ' + text + '\n';
+    console.log("Before splitting and formatting:", conversationContext);
 
     // Split the conversation context into messages
     let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
@@ -155,6 +155,7 @@ function queryGPT35Turbo(text) {
             content: content.join(': ')
         };
     });
+    console.log("After splitting and formatting:", messages);
 
     // Append the 'End of Every Prompt' content to the last user message
     if (endOfEveryPromptText && messages.length > 0 && messages[messages.length - 1].role === 'user') {
@@ -179,13 +180,12 @@ function queryGPT35Turbo(text) {
         if (!response.ok) {
             throw new Error('Network response was not ok');
         }
-        console.log("Message sent to GPT endpoint");
+        console.log("Message sent to GPT endpoint", payload);
         // Optionally handle the immediate response from the server if needed
     })
     .catch(error => {
         console.error('Error sending message to Glitch server:', error);
     });
-    saveConversationToGist(conversationContext);
 }
 
 // updateConversationWindow: Updates the conversation window with new text, ensuring the latest conversation is visible to the user.
