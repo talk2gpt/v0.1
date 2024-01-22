@@ -1,4 +1,4 @@
-// WWWWASSZZZABBBBBGFF
+// WWWWASSZZZABBBBBGFFASAS
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -113,7 +113,7 @@ function processAudioChunk(audioBlob) {
     formData.append("file", audioFile);
     formData.append("model", "whisper-1");
 
-    fetch('https://mammoth-spice-peace.glitch.me/audio-transcription', {
+    fetch('https://mammoth-spice-peace.glitch.me//transcribe-audio', {
         method: 'POST',
         body: formData
     })
