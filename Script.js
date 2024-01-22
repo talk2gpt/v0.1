@@ -1,4 +1,4 @@
-// WWWWASSZZZA
+// WWWWASSZZZABBBBB
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -29,8 +29,6 @@ let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObun
 let recordingInterval;
 let endOfEveryPromptText = '';
 const talkButton = document.getElementById('talkButton');
-const encodedKey = "c2stWXNFN204clN6VmNjb1RzMjJEMmhUM0JsYmtGSjNZWTV0M3JLWG5JSDZoY0tkNHhP";
-const apiKey = atob(encodedKey);
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 const sendTextButton = document.getElementById('sendTextButton');
 
@@ -106,34 +104,34 @@ function stopRecording() {
     }
 }
 
-// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
+// processAudioChunk: Sends each audio chunk to the Glitch server for transcription.
 function processAudioChunk(audioBlob) {
     console.log("Processing audio chunk");
-    let audioFile = new File([audioBlob], "recording.mp3", {
-        type: "audio/mp3",
-    });
 
     let formData = new FormData();
-    formData.append("file", audioFile);
-    formData.append("model", "whisper-1");
+    formData.append("file", new File([audioBlob], "recording.mp3", { type: "audio/mp3" }));
 
-    fetch('https://api.openai.com/v1/audio/transcriptions', {
+    fetch('https://mammoth-spice-peace.glitch.me/transcribe-audio', {
         method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`
-        },
         body: formData
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
     .then(data => {
-        let transcribedText = data.text;
+        let transcribedText = data.transcription;
         console.log("Transcription received:", transcribedText);
         conversationContext += 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(transcribedText);
-        queryGPT35Turbo(transcribedText);
+        updateConversationWindow('User: ' + transcribedText + '\n');
+        processFullConversation();
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => {
+        console.error('Transcription Error:', error);
+    });
 }
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
@@ -208,21 +206,16 @@ function updateConversationWindow(text) {
 
 // textToSpeech: Converts given text to speech using OpenAI's TTS API and queues the resulting audio URL for playback.
 function textToSpeech(text, callback) {
-    fetch('https://api.openai.com/v1/audio/speech', {
+    fetch('https://mammoth-spice-peace.glitch.me/text-to-speech', {
         method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            model: 'tts-1',
-            input: text,
-            voice: 'shimmer'
-        })
+        body: JSON.stringify({ input: text })
     })
-    .then(response => response.blob())
-    .then(blob => {
-        const audioUrl = URL.createObjectURL(blob);
+    .then(response => response.json())
+    .then(data => {
+        const audioUrl = data.audioUrl;
         queueAudio(audioUrl);
         callback();
     })
