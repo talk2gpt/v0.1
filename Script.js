@@ -107,31 +107,25 @@ function stopRecording() {
 // processAudioChunk: Sends each audio chunk to the Glitch server for transcription.
 function processAudioChunk(audioBlob) {
     console.log("Processing audio chunk");
+    let audioFile = new File([audioBlob], "recording.mp3", { type: "audio/mp3" });
 
     let formData = new FormData();
-    formData.append("file", new File([audioBlob], "recording.mp3", { type: "audio/mp3" }));
+    formData.append("file", audioFile);
+    formData.append("model", "whisper-1");
 
-    fetch('https://mammoth-spice-peace.glitch.me/transcribe-audio', {
+    fetch('https://mammoth-spice-peace.glitch.me/audio-transcription', {
         method: 'POST',
         body: formData
     })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        let transcribedText = data.transcription;
+        let transcribedText = data.text;
         console.log("Transcription received:", transcribedText);
         conversationContext += 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow('User: ' + transcribedText + '\n');
-        processFullConversation();
+        updateConversationWindow(transcribedText);
     })
-    .catch(error => {
-        console.error('Transcription Error:', error);
-    });
+    .catch(error => console.error('Error:', error));
 }
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
