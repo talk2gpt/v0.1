@@ -1,5 +1,5 @@
-// AAAAAS
-// High-Level Overview
+//ASS
+//High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
 // The code is structured to handle asynchronous events and API responses, ensuring a smooth user experience.
@@ -99,53 +99,41 @@ function startRecording() {
 }
 
 // stopRecording: Stops the media recorder and clears the recording interval.
-// Now waits for the audio processing to complete before proceeding.
-// stopRecording: Now waits for the conversation context to be updated.
-async function stopRecording() {
+function stopRecording() {
     clearInterval(recordingInterval);
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
     }
-    if (audioChunks.length > 0) {
-        try {
-            const updatedContext = await processAudioChunk(audioChunks[audioChunks.length - 1]);
-            processFullConversation(updatedContext); // Use the updated context
-        } catch (error) {
-            console.error('Error in processing audio chunk:', error);
-        }
-    }
 }
 
-
-// processAudioChunk: Processes each audio chunk and sends it for transcription.
-// Now resolves with the updated conversation context.
+// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
 function processAudioChunk(audioBlob) {
-    return new Promise((resolve, reject) => {
-        let audioFile = new File([audioBlob], "recording.mp3", {
-            type: "audio/mp3",
-        });
-
-        let formData = new FormData();
-        formData.append("file", audioFile);
-        formData.append("model", "whisper-1");
-
-        fetch('https://api.openai.com/v1/audio/transcriptions', {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${apiKey}`
-            },
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            let transcribedText = data.text;
-            conversationContext += 'User: ' + transcribedText + '\n';
-            resolve(conversationContext); // Resolve with the updated conversation context
-        })
-        .catch(error => reject(error));
+    console.log("Processing audio chunk");
+    let audioFile = new File([audioBlob], "recording.mp3", {
+        type: "audio/mp3",
     });
-}
 
+    let formData = new FormData();
+    formData.append("file", audioFile);
+    formData.append("model", "whisper-1");
+
+    fetch('https://api.openai.com/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        let transcribedText = data.text;
+        console.log("Transcription received:", transcribedText);
+        conversationContext += 'User: ' + transcribedText + '\n';
+        console.log("Appended to conversation context:", conversationContext);
+        updateConversationWindow(conversationContext);
+    })
+    .catch(error => console.error('Error:', error));
+}
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
 function processFullConversation() {
@@ -156,8 +144,10 @@ function processFullConversation() {
 // queryGPT35Turbo: Sends the current conversation context to GPT-3.5 Turbo for processing and appends the AI's response to the conversation.
 function queryGPT35Turbo(text) {
     console.log("Querying GPT-3.5 Turbo with text:", text);
-    // Add user's input to the conversation context for display and storage
+    // Add user's input to the conversation context for display
     conversationContext += 'User: ' + text + '\n';
+    const conversationWindow = document.getElementById('conversationWindow');
+    conversationWindow.innerText = conversationContext;
     console.log("Before splitting and formatting:", conversationContext);
 
     // Split the conversation context into messages
@@ -170,9 +160,12 @@ function queryGPT35Turbo(text) {
     });
     console.log("After splitting and formatting:", messages);
 
-    // Append the 'End of Every Prompt' content to the last user message
-    if (endOfEveryPromptText && messages.length > 0 && messages[messages.length - 1].role === 'user') {
-        messages[messages.length - 1].content += '\n' + endOfEveryPromptText;
+    // Append the 'End of Every Prompt' content to the last user message before sending to GPT
+    if (endOfEveryPromptText && messages.length > 0) {
+        let lastMessage = messages[messages.length - 1];
+        if (lastMessage.role === 'user') {
+            lastMessage.content += '\n' + endOfEveryPromptText; // Append the extra content
+        }
     }
 
     // Construct the payload to send to your Glitch server
