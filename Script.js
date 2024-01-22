@@ -1,3 +1,4 @@
+// AAAAA
 // High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -98,40 +99,56 @@ function startRecording() {
 }
 
 // stopRecording: Stops the media recorder and clears the recording interval.
-function stopRecording() {
+// Now waits for the audio processing to complete before proceeding.
+async function stopRecording() {
     clearInterval(recordingInterval);
     if (mediaRecorder && mediaRecorder.state === 'recording') {
         mediaRecorder.stop();
     }
+    if (audioChunks.length > 0) {
+        try {
+            await processAudioChunk(audioChunks[audioChunks.length - 1]);
+            processFullConversation();
+        } catch (error) {
+            console.error('Error in processing audio chunk:', error);
+        }
+    }
 }
 
-// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
+
+// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, 
+// and sends it to OpenAI for transcription. Now returns a Promise.
 function processAudioChunk(audioBlob) {
     console.log("Processing audio chunk");
-    let audioFile = new File([audioBlob], "recording.mp3", {
-        type: "audio/mp3",
+    return new Promise((resolve, reject) => {
+        let audioFile = new File([audioBlob], "recording.mp3", {
+            type: "audio/mp3",
+        });
+
+        let formData = new FormData();
+        formData.append("file", audioFile);
+        formData.append("model", "whisper-1");
+
+        fetch('https://api.openai.com/v1/audio/transcriptions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            let transcribedText = data.text;
+            console.log("Transcription received:", transcribedText);
+            conversationContext += 'User: ' + transcribedText + '\n';
+            console.log("Appended to conversation context:", conversationContext);
+            resolve();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            reject(error);
+        });
     });
-
-    let formData = new FormData();
-    formData.append("file", audioFile);
-    formData.append("model", "whisper-1");
-
-    fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`
-        },
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        let transcribedText = data.text;
-        console.log("Transcription received:", transcribedText);
-        conversationContext += 'User: ' + transcribedText + '\n';
-        console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(conversationContext);
-    })
-    .catch(error => console.error('Error:', error));
 }
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
