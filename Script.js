@@ -1,4 +1,4 @@
-//ASS
+// WWWWASS
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -46,7 +46,7 @@ talkButton.addEventListener('click', () => {
         stopRecording();
         talkButton.classList.remove('stop');
         talkButton.textContent = 'Push to Talk';
-        processFullConversation();
+//        processFullConversation();
     } else {
         startRecording();
         talkButton.classList.add('stop');
@@ -130,7 +130,8 @@ function processAudioChunk(audioBlob) {
         console.log("Transcription received:", transcribedText);
         conversationContext += 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(conversationContext);
+        updateConversationWindow(transcribedText);
+        queryGPT35Turbo(userInput);
     })
     .catch(error => console.error('Error:', error));
 }
