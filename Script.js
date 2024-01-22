@@ -386,10 +386,10 @@ function handleStreamedData(data) {
         accumulatedText += data.message;
         if (/[.?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
-            conversationContextb = '';
-            conversationContextb += 'AI: ' + accumulatedText + '\n';
-            updateConversationWindow(conversationContextb);
-            saveConversationToGist(conversationContextb);
+  //          conversationContextb = '';
+            conversationContext += 'AI: ' + accumulatedText + '\n';
+            updateConversationWindow(conversationContext);
+            saveConversationToGist(conversationContext);
             accumulatedText = '';
             // Call saveConversationToGist after AI's complete response
         }
