@@ -131,7 +131,7 @@ function processAudioChunk(audioBlob) {
         conversationContext += 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
         updateConversationWindow(transcribedText);
-        queryGPT35Turbo(userInput);
+        queryGPT35Turbo(transcribedText);
     })
     .catch(error => console.error('Error:', error));
 }
