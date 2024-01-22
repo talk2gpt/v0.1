@@ -100,6 +100,7 @@ function startRecording() {
 
 // stopRecording: Stops the media recorder and clears the recording interval.
 // Now waits for the audio processing to complete before proceeding.
+// stopRecording: Now waits for the conversation context to be updated.
 async function stopRecording() {
     clearInterval(recordingInterval);
     if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -107,8 +108,8 @@ async function stopRecording() {
     }
     if (audioChunks.length > 0) {
         try {
-            await processAudioChunk(audioChunks[audioChunks.length - 1]);
-            processFullConversation();
+            const updatedContext = await processAudioChunk(audioChunks[audioChunks.length - 1]);
+            processFullConversation(updatedContext); // Use the updated context
         } catch (error) {
             console.error('Error in processing audio chunk:', error);
         }
@@ -116,10 +117,9 @@ async function stopRecording() {
 }
 
 
-// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, 
-// and sends it to OpenAI for transcription. Now returns a Promise.
+// processAudioChunk: Processes each audio chunk and sends it for transcription.
+// Now resolves with the updated conversation context.
 function processAudioChunk(audioBlob) {
-    console.log("Processing audio chunk");
     return new Promise((resolve, reject) => {
         let audioFile = new File([audioBlob], "recording.mp3", {
             type: "audio/mp3",
@@ -139,17 +139,13 @@ function processAudioChunk(audioBlob) {
         .then(response => response.json())
         .then(data => {
             let transcribedText = data.text;
-            console.log("Transcription received:", transcribedText);
             conversationContext += 'User: ' + transcribedText + '\n';
-            console.log("Appended to conversation context:", conversationContext);
-            resolve();
+            resolve(conversationContext); // Resolve with the updated conversation context
         })
-        .catch(error => {
-            console.error('Error:', error);
-            reject(error);
-        });
+        .catch(error => reject(error));
     });
 }
+
 
 // processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
 function processFullConversation() {
