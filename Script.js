@@ -404,20 +404,18 @@ function handleStreamedData(data) {
 
             // Clear  for the next message and reset firstChunk
             conversationContext += accumulatedTextb + ' ';
-            accumulatedText = '';
-            accumulatedTextb = '';
+            updateConversationWindow(accumulatedTextb + ' ');    
+            saveConversationToGist(conversationContext);
         }
         if (data.streamComplete) {
             conversationContext += accumulatedTextb + '\n';
-            accumulatedText = '';
-            accumulatedTextb = '';
+            updateConversationWindow(accumulatedTextb + ' ');    
+            saveConversationToGist(conversationContext);
             firstChunk = true;
         }
-        // Update the conversation window
-        updateConversationWindow(text);
-    
-        // Save the conversation to the gist
-        saveConversationToGist(conversationContext);
+        accumulatedText = '';
+        accumulatedTextb = '';
+
     }
 }
 
