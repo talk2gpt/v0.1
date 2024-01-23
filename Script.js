@@ -1,4 +1,4 @@
-// WWWWASSZZZATTTTTTCDSXCXCXVCVCEDED
+// WWWWASSZZZATTTTTTCDSXCXCXVCVCEDEDAWAWAWAWA
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -34,7 +34,7 @@ const apiKey = atob(encodedKey);
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 const sendTextButton = document.getElementById('sendTextButton');
 let firstChunk = true;
-let accumulatedText = '';
+
 
 
 // Event Listeners
@@ -391,20 +391,20 @@ function handleStreamedData(data) {
     if (data.message) {
         if (firstChunk) {
             // Prepend "AI:" only at the beginning of the first chunk of a new message
-            accumulatedText += 'AI: ';
+             += 'AI: ';
             firstChunk = false;
         }
-        accumulatedText += data.message;
+         += data.message;
 
-        if (data.streamComplete || /[.?!]\s*$/.test(accumulatedText)) {
+        if (data.streamComplete || /[.?!]\s*$/.test()) {
             // Queue the TTS request with the full message
-            queueTTSRequest(accumulatedText);
+            queueTTSRequest();
 
             // Append the full message to the conversation context
-            appendToConversationContext(accumulatedText, data.streamComplete);
+            appendToConversationContext(, data.streamComplete);
 
-            // Clear accumulatedText for the next message and reset firstChunk
-            accumulatedText = '';
+            // Clear  for the next message and reset firstChunk
+             = '';
             firstChunk = true;
         }
     }
