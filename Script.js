@@ -258,8 +258,7 @@ function saveConversationToGist(conversationText) {
     .then(response => response.json())
     .then(data => {
         // Append new conversation text to the existing content
-        let existingContent = data.files['conversation.txt'].content;
-        let updatedContent = existingContent + '\n' + conversationText;
+        let updatedContent = conversationContext;
 
         // Prepare data for Gist update
         const gistData = {
