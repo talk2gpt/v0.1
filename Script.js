@@ -391,40 +391,31 @@ function handleStreamedData(data) {
     if (data.message) {
         if (firstChunk) {
             // Prepend "AI:" only at the beginning of the first chunk of a new message
-            accumulatedText += 'AI: ';
+            accumulatedTextb += 'AI: ';
             firstChunk = false;
         }
         accumulatedText += data.message;
 
-        if (data.streamComplete || /[.?!]\s*$/.test(accumulatedText)) {
+        if (/[.?!]\s*$/.test(accumulatedText)) {
             // Queue the TTS request with the full message
             queueTTSRequest(accumulatedText);
 
-            // Append the full message to the conversation context
-            appendToConversationContext(accumulatedText, data.streamComplete);
-
             // Clear  for the next message and reset firstChunk
+            conversationContext += accumulatedTextb + ' ';
             accumulatedText = '';
+        if (data.streamComplete) {
+            conversationContext += accumulatedTextb + '\n';
             firstChunk = true;
         }
+        // Update the conversation window
+        updateConversationWindow(text);
+    
+        // Save the conversation to the gist
+        saveConversationToGist(conversationContext);
     }
 }
 
-function appendToConversationContext(text, streamComplete) {
-    if (streamComplete) {
-        // If the stream is complete, append with a new line
-        conversationContext += text + '\n';
-    } else {
-        // If the stream is not complete, append with a space
-        conversationContext += text + ' ';
-    }
 
-    // Update the conversation window
-    updateConversationWindow(text);
-
-    // Save the conversation to the gist
-    saveConversationToGist(conversationContext);
-}
 
 // queueTTSRequest: Adds a text to the TTS queue and initiates processing if not already active.
 function queueTTSRequest(text) {
