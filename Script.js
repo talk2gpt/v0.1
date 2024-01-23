@@ -243,34 +243,47 @@ function textToSpeech(text, callback) {
 
 // saveConversationToGist: Saves the current conversation context to a GitHub Gist for persistent storage and retrieval.
 function saveConversationToGist(conversationText) {
-    const gistData = {
-        description: "Chat Conversation History",
-        public: false,
-        files: {
-            "conversation.txt": {
-                content: conversationText
-            }
-        }
-    };
-
-    const method = gistId ? 'PATCH' : 'POST';
-    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
-
-    fetch(url, {
-        method: method,
+    // Fetch the current content of the Gist
+    fetch(`https://api.github.com/gists/${gistId}`, {
         headers: {
-            'Authorization': `token ${githubToken}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gistData)
+            'Authorization': `token ${githubToken}`
+        }
     })
     .then(response => response.json())
     .then(data => {
-        gistId = data.id;
-        console.log('Gist saved:', data);
+        // Append new conversation text to the existing content
+        let existingContent = data.files['conversation.txt'].content;
+        let updatedContent = existingContent + '\n' + conversationText;
+
+        // Prepare data for Gist update
+        const gistData = {
+            description: "Chat Conversation History",
+            public: false,
+            files: {
+                "conversation.txt": {
+                    content: updatedContent
+                }
+            }
+        };
+
+        // Update the Gist
+        fetch(`https://api.github.com/gists/${gistId}`, {
+            method: 'PATCH',
+            headers: {
+                'Authorization': `token ${githubToken}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(gistData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Gist updated:', data);
+        })
+        .catch(error => console.error('Error updating Gist:', error));
     })
-    .catch(error => console.error('Error saving Gist:', error));
+    .catch(error => console.error('Error fetching Gist:', error));
 }
+
 
 // loadConversationFromGist: Loads conversation history from a specified GitHub Gist to restore context.
 function loadConversationFromGist(gistId) {
