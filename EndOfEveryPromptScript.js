@@ -1,4 +1,4 @@
-// WWXXZZZTTTTTTTTGGGGGGGGGAAAA
+// UXBCSDNA
 
 // Global Variables and Constants
 // These variables are used throughout the script for various purposes.
@@ -98,8 +98,8 @@ function startRecordingEoE() {
             }, 30000); // Restart recording every 30 seconds
 
             mediaRecorderEoE.addEventListener("dataavailable", eventEoE => {
-                audioChunksEoE.push(eventEoE.dataEoE);
-                processAudioChunkEoE(eventEoE.dataEoE);
+                audioChunksEoE.push(eventEoE.data);
+                processAudioChunkEoE(eventEoE.data);
             });
 
             streamEoE.getAudioTracks()[0].addEventListener('ended', stopRecordingEoE);
