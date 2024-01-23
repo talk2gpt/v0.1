@@ -411,7 +411,6 @@ function handleStreamedData(data) {
         accumulatedText = '';
         accumulatedTextb = '';
 
-    }
 }
 
 
