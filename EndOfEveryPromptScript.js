@@ -2,227 +2,158 @@
 
 // Global Variables and Constants
 // These variables are used throughout the script for various purposes.
-// 'mediaRecorder' controls the audio recording functionality.
-// 'audioChunks' stores chunks of audio data for processing.
-// 'conversationContext' keeps track of the conversation history.
-// 'accumulatedText' accumulates text from streamed data for processing.
-// 'ttsQueue' manages a queue for text-to-speech requests.
-// 'isProcessingTTS' flags if a text-to-speech process is currently active.
-// 'audioQueue' queues audio URLs for sequential playback.
-// 'isPlayingAudio' indicates if an audio is currently being played.
-// 'gistId', 'githubToken', 'apiKey', and 'encodedKey' are used for API interactions.
-// 'sse' initializes a new EventSource that listens to server-sent events.
-let mediaRecorder;
-let audioChunks = [];
-let conversationContext = '';
-let accumulatedText = '';
-let accumulatedTextb = '';
-let ttsQueue = [];
-let isProcessingTTS = false;
-let audioQueue = [];
-let isPlayingAudio = false;
-let gistId = '319efc519c6a17699365d23874099a78';
-let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
-let recordingInterval;
-let endOfEveryPromptText = '';
-const talkButtonEndOfEveryPrompt = document.getElementById('talkButtonEndOfEveryPrompt');
-const encodedKey = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2Z2hsWERM";
-const apiKey = atob(encodedKey);
-const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
-const submitEndOfEveryPromptEdit = document.getElementById('submitEndOfEveryPromptEdit');
-let firstChunk = true;
+// 'mediaRecorderEoE' controls the audio recording functionality.
+// 'audioChunksEoE' stores chunks of audio data for processing.
+// 'conversationContextEoE' keeps track of the conversation history.
+// 'accumulatedTextEoE' accumulates text from streamed data for processing.
+// 'ttsQueueEoE' manages a queue for text-to-speech requests.
+// 'isProcessingTTSEoE' flags if a text-to-speech process is currently active.
+// 'audioQueueEoE' queues audio URLs for sequential playback.
+// 'isPlayingAudioEoE' indicates if an audio is currently being played.
+// 'gistIdEoE', 'githubTokenEoE', 'apiKeyEoE', and 'encodedKeyEoE' are used for API interactions.
+// 'sseEoE' initializes a new EventSource that listens to server-sent events.
+let mediaRecorderEoE;
+let audioChunksEoE = [];
+let conversationContextEoE = '';
+let accumulatedTextEoE = '';
+let accumulatedTextEoEb = '';
+let ttsQueueEoE = [];
+let isProcessingTTSEoE = false;
+let audioQueueEoE = [];
+let isPlayingAudioEoE = false;
+let gistIdEoE = '319efc519c6a17699365d23874099a78';
+let githubTokenEoE = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
+let recordingIntervalEoE;
+let endOfEveryPromptTextEoE = '';
+const talkButtonEndOfEveryPromptEoE = document.getElementById('talkButtonEndOfEveryPromptEoE');
+const encodedKeyEoE = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2Z2hsWERM";
+const apiKeyEoE = atob(encodedKeyEoE);
+const sseEoE = new EventSource('https://mammoth-spice-peace.glitch.me/events');
+const submitEndOfEveryPromptEditEoE = document.getElementById('submitEndOfEveryPromptEditEoE');
+let firstChunkEoE = true;
 
 
 
 // Event Listeners
-// These listeners respond to specific events such as page load, button clicks, or incoming SSE messages.
-// They trigger appropriate functions like loading data from Gist, starting/stopping recording, and processing SSE data.
+// These listeners respond to specific events such as page load, button clicks, or incoming sseEoE messages.
+// They trigger appropriate functions like loading data from Gist, starting/stopping recording, and processing sseEoE data.
 window.addEventListener('load', () => {
-    loadEndOfEveryPromptFromGist(gistId);
+    loadEndOfEveryPromptFromGistEoE(gistIdEoE);
 });
 
-talkButtonEndOfEveryPrompt.addEventListener('click', () => {
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        stopRecording();
-        talkButtonEndOfEveryPrompt.classList.remove('stop');
-        talkButtonEndOfEveryPrompt.textContent = 'Push to Talk';
+talkButtonEndOfEveryPromptEoE.addEventListener('click', () => {
+    if (mediaRecorderEoE && mediaRecorderEoE.state === 'recording') {
+        stopRecordingEoE();
+        talkButtonEndOfEveryPromptEoE.classList.remove('stop');
+        talkButtonEndOfEveryPromptEoE.textContent = 'Push to Talk';
 //        processFullConversation();
     } else {
-        startRecording();
-        talkButtonEndOfEveryPrompt.classList.add('stop');
-        talkButtonEndOfEveryPrompt.textContent = 'Stop';
+        startRecordingEoE();
+        talkButtonEndOfEveryPromptEoE.classList.add('stop');
+        talkButtonEndOfEveryPromptEoE.textContent = 'Stop';
     }
 });
 
-submitEndOfEveryPromptEdit.addEventListener('click', () => {
-    const userInput = document.getElementById('endOfEveryPromptInput').value;
-    if (userInput) {
+submitEndOfEveryPromptEditEoE.addEventListener('click', () => {
+    const userInputEoE = document.getElementById('endOfEveryPromptInput').value;
+    if (userInputEoE) {
         document.getElementById('endOfEveryPromptInput').value = '';
-        conversationContextb = '\n' + 'User: ' + userInput + '\n';
-        conversationContext += '\n' + 'User: ' + userInput + '\n';
-        console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(conversationContextb);
-        queryGPT35Turbo(conversationContext);
+        conversationContextEoEb = '\n' + 'User: ' + userInputEoE + '\n';
+        conversationContextEoE += '\n' + 'User: ' + userInputEoE + '\n';
+        console.log("Appended to conversation context:", conversationContextEoE);
+        updateConversationWindow(conversationContextEoEb);
+        queryGPT35Turbo(conversationContextEoE);
     }
 });
 
-sse.onmessage = (event) => {
-    const data = JSON.parse(event.data);
-    handleStreamedData(data);
+sseEoE.onmessage = (eventEoE) => {
+    const dataEoE = JSON.parse(eventEoE.dataEoE);
+    handleStreamedDataEoE(dataEoE);
 };
 
-sse.onerror = (error) => {
-    console.error('SSE Error:', error);
+sseEoE.onerror = (errorEoE) => {
+    console.errorEoE('sseEoE errorEoE:', errorEoE);
 };
 
-// Ensure loadConversationFromGist is called on window load
+// Ensure loadConversationFromGistEoE is called on window load
 window.addEventListener('load', () => {
-    loadConversationFromGist(gistId);
-    loadEndOfEveryPromptFromGist(gistId);
+    loadConversationFromGistEoE(gistIdEoE);
+    loadEndOfEveryPromptFromGistEoE(gistIdEoE);
 });
 
 // Function Implementations
 // Each function is documented with details on its purpose, input, output, and interaction with other components.
 
-// startRecording: Initializes the media recorder and handles the audio stream. It sets up intervals to manage audio chunking.
-function startRecording() {
+// startRecordingEoE: Initializes the media recorder and handles the audio streamEoE. It sets up intervals to manage audio chunking.
+function startRecordingEoE() {
     navigator.mediaDevices.getUserMedia({ audio: true })
-        .then(stream => {
-            mediaRecorder = new MediaRecorder(stream);
-            mediaRecorder.start();
-            recordingInterval = setInterval(() => {
-                if (mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop();
-                    mediaRecorder.start();
+        .then(streamEoE => {
+            mediaRecorderEoE = new mediaRecorderEoE(streamEoE);
+            mediaRecorderEoE.start();
+            recordingIntervalEoE = setInterval(() => {
+                if (mediaRecorderEoE.state === 'recording') {
+                    mediaRecorderEoE.stop();
+                    mediaRecorderEoE.start();
                 }
             }, 30000); // Restart recording every 30 seconds
 
-            mediaRecorder.addEventListener("dataavailable", event => {
-                audioChunks.push(event.data);
-                processAudioChunk(event.data);
+            mediaRecorderEoE.addEventListener("dataavailable", eventEoE => {
+                audioChunksEoE.push(eventEoE.dataEoE);
+                processAudioChunkEoE(eventEoE.dataEoE);
             });
 
-            stream.getAudioTracks()[0].addEventListener('ended', stopRecording);
+            streamEoE.getAudioTracks()[0].addEventListener('ended', stopRecordingEoE);
         })
-        .catch(error => console.error('Error:', error));
+        .catch(errorEoE => console.errorEoE('errorEoE:', errorEoE));
 }
 
-// stopRecording: Stops the media recorder and clears the recording interval.
-function stopRecording() {
-    clearInterval(recordingInterval);
-    if (mediaRecorder && mediaRecorder.state === 'recording') {
-        mediaRecorder.stop();
+// stopRecordingEoE: Stops the media recorder and clears the recording interval.
+function stopRecordingEoE() {
+    clearInterval(recordingIntervalEoE);
+    if (mediaRecorderEoE && mediaRecorderEoE.state === 'recording') {
+        mediaRecorderEoE.stop();
     }
 }
 
-// processAudioChunk: Processes each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
-function processAudioChunk(audioBlob) {
+// processAudioChunkEoE: ProcesseEoEs each audio chunk, converts it to an MP3 file, and sends it to OpenAI for transcription.
+function processAudioChunkEoE(audioBlob) {
     console.log("Processing audio chunk");
-    let audioFile = new File([audioBlob], "recording.mp3", {
+    let audioFileEoE = new File([audioBlob], "recording.mp3", {
         type: "audio/mp3",
     });
 
-    let formData = new FormData();
-    formData.append("file", audioFile);
-    formData.append("model", "whisper-1");
+    let formdataEoE = new FormdataEoE();
+    formdataEoE.append("file", audioFileEoE);
+    formdataEoE.append("model", "whisper-1");
 
     fetch('https://api.openai.com/v1/audio/transcriptions', {
-        method: 'POST',
+        methodEoE: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`
+            'Authorization': `Bearer ${apiKeyEoE}`
         },
-        body: formData
+        body: formdataEoE
     })
-    .then(response => response.json())
-    .then(data => {
-        let transcribedText = data.text;
-        console.log("Transcription received:", transcribedText);
-        conversationContextb = '\n' + 'User: ' + transcribedText + '\n';
-        conversationContext += '\n' + 'User: ' + transcribedText + '\n';
-        console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(conversationContextb);
-        queryGPT35Turbo(conversationContext);
+    .then(responseEoE => responseEoE.json())
+    .then(dataEoE => {
+        let transcribedTextEoE = dataEoE.text;
+        console.log("Transcription received:", transcribedTextEoE);
+        conversationContextEoEb = '\n' + 'User: ' + transcribedTextEoE + '\n';
+        conversationContextEoE += '\n' + 'User: ' + transcribedTextEoE + '\n';
+        console.log("Appended to conversation context:", conversationContextEoE);
+        updateConversationWindow(conversationContextEoEb);
+        queryGPT35Turbo(conversationContextEoE);
     })
-    .catch(error => console.error('Error:', error));
+    .catch(errorEoE => console.errorEoE('errorEoE:', errorEoE));
 }
 
-// processFullConversation: Processes the entire conversation by sending the current context to GPT-3.5 Turbo and updating the conversation window.
-function processFullConversation() {
-    console.log("Processing full conversation");
-    queryGPT35Turbo(conversationContext);
-}
 
-// queryGPT35Turbo: Sends the current conversation context to GPT-3.5 Turbo for processing and appends the AI's response to the conversation.
-function queryGPT35Turbo(text) {
-    firstChunk = true;
-    console.log("Querying GPT-3.5 Turbo with text:", text);
-    // Add user's input to the conversation context for display
-    //conversationContext += 'User: ' + text + '\n';
-    const conversationWindow = document.getElementById('endOfEveryPromptContent');
-    conversationWindow.innerText = conversationContext;
-    console.log("Before splitting and formatting:", conversationContext);
 
-    // Split the conversation context into messages
-    let messages = conversationContext.split('\n').filter(line => line.trim() !== '').map(line => {
-        let [role, ...content] = line.split(': ');
-        return {
-            role: role.trim().toLowerCase() === 'user' ? 'user' : 'assistant',
-            content: content.join(': ')
-        };
-    });
-    console.log("After splitting and formatting:", messages);
-
-    // Append the 'End of Every Prompt' content to the last user message before sending to GPT
-    if (endOfEveryPromptText && messages.length > 0) {
-        let lastMessage = messages[messages.length - 1];
-        if (lastMessage.role === 'user') {
-            lastMessage.content += '\n' + endOfEveryPromptText; // Append the extra content
-        }
-    }
-
-    // Construct the payload to send to your Glitch server
-    let payload = {
-        model: 'gpt-4-1106-preview',
-        messages: messages
-    };
-
-    // Send the payload to your Glitch server
-    fetch('https://mammoth-spice-peace.glitch.me/send-message', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(response => {
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        console.log("Message sent to GPT endpoint", payload);
-        // Optionally handle the immediate response from the server if needed
-    })
-    .catch(error => {
-        console.error('Error sending message to Glitch server:', error);
-    });
-}
-
-// updateConversationWindow: Updates the conversation window with new text, ensuring the latest conversation is visible to the user.
-function updateConversationWindow(text) {
-    const conversationWindow = document.getElementById('endOfEveryPromptContent');
-    if (conversationWindow) {
-        conversationWindow.innerText += text;
-        conversationWindow.scrollTop = conversationWindow.scrollHeight;
-    } else {
-        console.error('Conversation window element not found');
-    }
-}
-
-// textToSpeech: Converts given text to speech using OpenAI's TTS API and queues the resulting audio URL for playback.
-function textToSpeech(text, callback) {
+// textToSpeechEoE: Converts given text to speech using OpenAI's TTS API and queues the resulting audio urlEoE for playback.
+function textToSpeechEoE(text, callback) {
     fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
+        methodEoE: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${apiKeyEoE}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -231,200 +162,136 @@ function textToSpeech(text, callback) {
             voice: 'shimmer'
         })
     })
-    .then(response => response.blob())
-    .then(blob => {
-        const audioUrl = URL.createObjectURL(blob);
-        queueAudio(audioUrl);
+    .then(responseEoE => responseEoE.blobEoE())
+    .then(blobEoE => {
+        const audioUrlEoE = urlEoE.createObjectURL(blobEoE);
+        queueAudioEoE(audioUrlEoE);
         callback();
     })
-    .catch(error => {
-        console.error('TTS Error:', error);
+    .catch(errorEoE => {
+        console.errorEoE('TTS errorEoE:', errorEoE);
         callback();
     });
 }
 
-// saveConversationToGist: Saves the current conversation context to a GitHub Gist for persistent storage and retrieval.
-function saveConversationToGist(conversationText) {
-    // Fetch the current content of the Gist
-    fetch(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-            'Authorization': `token ${githubToken}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Append new conversation text to the existing content
-        let updatedContent = conversationContext;
-
-        // Prepare data for Gist update
-        const gistData = {
-            description: "Chat Conversation History",
-            public: false,
-            files: {
-                "endOfEveryPrompt.txt": {
-                    content: updatedContent
-                }
-            }
-        };
-
-        // Update the Gist
-        fetch(`https://api.github.com/gists/${gistId}`, {
-            method: 'PATCH',
-            headers: {
-                'Authorization': `token ${githubToken}`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(gistData)
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log('Gist updated:', data);
-        })
-        .catch(error => console.error('Error updating Gist:', error));
-    })
-    .catch(error => console.error('Error fetching Gist:', error));
-}
-
-
-// loadConversationFromGist: Loads conversation history from a specified GitHub Gist to restore context.
-function loadConversationFromGist(gistId) {
-    fetch(`https://api.github.com/gists/${gistId}`, {
-        headers: {
-            'Authorization': `token ${githubToken}`
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        conversationContext = data.files['endOfEveryPrompt.txt'].content;
-        updateConversationWindow(conversationContext);
-        console.log('Gist loaded:', data);
-    })
-    .catch(error => console.error('Error loading Gist:', error));
-}
-
-// decodeString: Decodes a provided string, used for obfuscating API tokens or similar sensitive data.
-function decodeString(encodedStr) {
-    return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
-}
-
-// loadEndOfEveryPromptFromGist: Loads additional text (used at the end of every prompt) from a GitHub Gist.
-function loadEndOfEveryPromptFromGist(gistId) {
-    fetch(`https://api.github.com/gists/${gistId}`)
-        .then(response => response.json())
-        .then(data => {
+// loadEndOfEveryPromptFromGistEoE: Loads additional text (used at the end of every prompt) from a GitHub Gist.
+function loadEndOfEveryPromptFromGistEoE(gistIdEoE) {
+    fetch(`https://api.github.com/gists/${gistIdEoE}`)
+        .then(responseEoE => responseEoE.json())
+        .then(dataEoE => {
             // Assuming the content is stored in a file named 'endOfEveryPrompt.txt' in the gist
-            endOfEveryPromptText = data.files['endOfEveryPrompt.txt'].content;
+            endOfEveryPromptTextEoE = dataEoE.files['endOfEveryPrompt.txt'].content;
 
             // Update the text area with the fetched content
-            document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptText;
+            document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptTextEoE;
         })
-        .catch(error => {
-            console.error('Error loading End of Every Prompt content:', error);
-            // Handle any errors here, such as displaying an error message to the user
+        .catch(errorEoE => {
+            console.errorEoE('errorEoE loading End of Every Prompt content:', errorEoE);
+            // Handle any errors here, such as displaying an errorEoE message to the user
         });
 }
 
-// saveEndOfEveryPromptToGist: Saves updated 'end of every prompt' text to a GitHub Gist for future use.
-function saveEndOfEveryPromptToGist(updatedText) {
-    const gistData = {
+// saveEndOfEveryPromptToGistEoE: Saves updated 'end of every prompt' text to a GitHub Gist for future use.
+function saveEndOfEveryPromptToGistEoE(updatedTextEoE) {
+    const gistdataEoE = {
         description: "End of Every Prompt Content",
         public: false,
         files: {
             "endOfEveryPrompt.txt": {
-                content: updatedText
+                content: updatedTextEoE
             }
         }
     };
 
-    const method = gistId ? 'PATCH' : 'POST';
-    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
+    const methodEoE = gistIdEoE ? 'PATCH' : 'POST';
+    const urlEoE = gistIdEoE ? `https://api.github.com/gists/${gistIdEoE}` : 'https://api.github.com/gists';
 
-    fetch(url, {
-        method: method,
+    fetch(urlEoE, {
+        methodEoE: methodEoE,
         headers: {
-            'Authorization': `token ${githubToken}`, // Ensure you have a valid GitHub token
+            'Authorization': `token ${githubTokenEoE}`, // Ensure you have a valid GitHub token
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify(gistData)
+        body: JSON.stringify(gistdataEoE)
     })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.id) {
-            gistIdForEndOfEveryPrompt = data.id; // Save the Gist ID for future updates
-            endOfEveryPromptText = updatedText; // Update the global variable
-            console.log('Gist updated successfully:', data);
+    .then(responseEoE => responseEoE.json())
+    .then(dataEoE => {
+        if (dataEoE && dataEoE.id) {
+            gistIdEoEForEndOfEveryPromptEoE = dataEoE.id; // Save the Gist ID for future updates
+            endOfEveryPromptTextEoE = updatedTextEoE; // Update the global variable
+            console.log('Gist updated successfully:', dataEoE);
         } else {
-            throw new Error('Failed to update Gist');
+            throw new errorEoE('Failed to update Gist');
         }
     })
-    .catch(error => {
-        console.error('Error updating Gist:', error);
+    .catch(errorEoE => {
+        console.errorEoE('errorEoE updating Gist:', errorEoE);
     });
 }
 
-// processEndOfEveryPromptEdit: Processes user edits to the 'end of every prompt' text and updates it in the Gist.
-function processEndOfEveryPromptEdit(userInput) {
+// processeEoEndOfEveryPromptEditEoE: ProcesseEoEs user edits to the 'end of every prompt' text and updates it in the Gist.
+function processeEoEndOfEveryPromptEditEoE(userInputEoE) {
     // Predefined introduction text explaining the purpose of the text
-    let introText = "This is the text of a set of custom instructions for an implementation of GPT-4:\n";
+    let introTextEoE = "This is the text of a set of custom instructions for an implementation of GPT-4:\n";
 
     // Current end of every prompt content
-    let currentContent = endOfEveryPromptText;
+    let currentContentEoE = endOfEveryPromptTextEoE;
 
     // User's proposed changes
-    let changeRequest = "\nThe user wants to change these instrctions. This is a prompt provided by the user to change these instructions:\n" + userInput;
+    let changeRequestEoE = "\nThe user wants to change these instrctions. This is a prompt provided by the user to change these instructions:\n" + userInputEoE;
 
     // Specific instruction for GPT-4
-    let instructionForGPT = "\nPlease return new custom instructions revised based on this user prompt. Only return the revised instructions exactly, with no additional text before or after.";
+    let instructionForGPTEoE = "\nPlease return new custom instructions revised based on this user prompt. Only return the revised instructions exactly, with no additional text before or after.";
 
     // Complete prompt to send to GPT-4
-    let completePrompt = introText + currentContent + changeRequest + instructionForGPT;
+    let completePromptEoE = introTextEoE + currentContentEoE + changeRequestEoE + instructionForGPTEoE;
 
-    // Send completePrompt to GPT-4, process the response, and update the end of every prompt text and gist
+    // Send completePromptEoE to GPT-4, process the responseEoE, and update the end of every prompt text and gist
     fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
+        methodEoE: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKey}`,
+            'Authorization': `Bearer ${apiKeyEoE}`,
             'Content-Type': 'application/json'
         },
         body: JSON.stringify({
             model: 'gpt-4-1106-preview',
-            messages: [{role: "assistant", content: completePrompt}] // Structure as per Chat API requirements
+            messages: [{role: "assistant", content: completePromptEoE}] // Structure as per Chat API requirements
         })
     })
-    .then(response => response.json())
-    .then(data => {
-        let revisedInstructions = data.choices[0].message.content;
-        endOfEveryPromptText = revisedInstructions;
-        document.getElementById('endOfEveryPromptInput').value = revisedInstructions;
-        saveEndOfEveryPromptToGist(revisedInstructions); // Function to save to gist
+    .then(responseEoE => responseEoE.json())
+    .then(dataEoE => {
+        let revisedInstructionsEoE = dataEoE.choices[0].message.content;
+        endOfEveryPromptTextEoE = revisedInstructionsEoE;
+        document.getElementById('endOfEveryPromptInput').value = revisedInstructionsEoE;
+        saveEndOfEveryPromptToGistEoE(revisedInstructionsEoE); // Function to save to gist
     })
-    .catch(error => {
-        console.error('Error processing end of every prompt edit:', error);
+    .catch(errorEoE => {
+        console.errorEoE('errorEoE processing end of every prompt edit:', errorEoE);
     });
 }
 
-function handleStreamedData(data) {
-    if (data.message) {
-        if (firstChunk) {
+function handleStreamedDataEoE(dataEoE) {
+    if (dataEoE.message) {
+        if (firstChunkEoE) {
             // Prepend "AI:" only at the beginning of the first chunk of a new message
-            accumulatedTextb += 'AI: ';
-            firstChunk = false;
+            accumulatedTextEoEb += 'AI: ';
+            firstChunkEoE = false;
         }
-        accumulatedText += data.message;
-        accumulatedTextb += data.message;
+        accumulatedTextEoE += dataEoE.message;
+        accumulatedTextEoEb += dataEoE.message;
         
-        if (/[.?!]\s*$/.test(accumulatedText)) {
+        if (/[.?!]\s*$/.test(accumulatedTextEoE)) {
             // Queue the TTS request with the full message
-            queueTTSRequest(accumulatedText);
+            queueTTSRequestEoE(accumulatedTextEoE);
 
             // Update conversation context and window, then save
-            conversationContext += accumulatedTextb + ' ';
-            updateConversationWindow(accumulatedTextb + ' ');    
-            saveConversationToGist(conversationContext);
+            conversationContextEoE += accumulatedTextEoEb + ' ';
+            updateConversationWindow(accumulatedTextEoEb + ' ');    
+            saveConversationToGistEoE(conversationContextEoE);
 
-            // Clear accumulated texts for the next message and reset firstChunk
-            accumulatedText = '';
-            accumulatedTextb = '';
+            // Clear accumulated texts for the next message and reset firstChunkEoE
+            accumulatedTextEoE = '';
+            accumulatedTextEoEb = '';
         }
     }
 }
@@ -433,44 +300,44 @@ function handleStreamedData(data) {
 
 
 
-// queueTTSRequest: Adds a text to the TTS queue and initiates processing if not already active.
-function queueTTSRequest(text) {
-    ttsQueue.push(text);
-    if (!isProcessingTTS) {
-        processNextTTSRequest();
+// queueTTSRequestEoE: Adds a text to the TTS queue and initiates processing if not already active.
+function queueTTSRequestEoE(text) {
+    ttsQueueEoE.push(text);
+    if (!isProcessingTTSEoE) {
+        processNextTTSRequestEoE();
     }
 }
 
-// processNextTTSRequest: Processes the next item in the TTS queue, sending it to the text-to-speech API.
-function processNextTTSRequest() {
-    if (ttsQueue.length > 0) {
-        isProcessingTTS = true;
-        const text = ttsQueue.shift();
-        textToSpeech(text, () => {
-            isProcessingTTS = false;
-            processNextTTSRequest();
+// processNextTTSRequestEoE: ProcesseEoEs the next item in the TTS queue, sending it to the text-to-speech API.
+function processNextTTSRequestEoE() {
+    if (ttsQueueEoE.length > 0) {
+        isProcessingTTSEoE = true;
+        const textEoE = ttsQueueEoE.shift();
+        textToSpeechEoE(textEoE, () => {
+            isProcessingTTSEoE = false;
+            processNextTTSRequestEoE();
         });
     }
 }
 
-// queueAudio: Adds a new audio URL to the playback queue and starts playback if not already in progress.
-function queueAudio(audioUrl) {
-    audioQueue.push(audioUrl);
-    if (!isPlayingAudio) {
-        playNextAudio();
+// queueAudioEoE: Adds a new audio urlEoE to the playback queue and starts playback if not already in progress.
+function queueAudioEoE(audioUrlEoE) {
+    audioQueueEoE.push(audioUrlEoE);
+    if (!isPlayingAudioEoE) {
+        playNextAudioEoE();
     }
 }
 
-// playNextAudio: Plays the next audio in the queue and sets up the trigger for subsequent audios.
-function playNextAudio() {
-    if (audioQueue.length > 0) {
-        const audioUrl = audioQueue.shift();
-        const audio = new Audio(audioUrl);
-        isPlayingAudio = true;
-        audio.play();
-        audio.onended = () => {
-            isPlayingAudio = false;
-            playNextAudio();
+// playNextAudioEoE: Plays the next audio in the queue and sets up the trigger for subsequent audios.
+function playNextAudioEoE() {
+    if (audioQueueEoE.length > 0) {
+        const audioUrlEoE = audioQueueEoE.shift();
+        const audioEoE = new Audio(audioUrlEoE);
+        isPlayingAudioEoE = true;
+        audioEoE.play();
+        audioEoE.onended = () => {
+            isPlayingAudioEoE = false;
+            playNextAudioEoE();
         };
     }
 }
