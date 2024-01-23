@@ -28,7 +28,6 @@ let isPlayingAudio = false;
 let gistId = '319efc519c6a17699365d23874099a78';
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
-let endOfEveryPromptText = '';
 const talkButton = document.getElementById('talkButton');
 const encodedKey = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2Z2hsWERM";
 const apiKey = atob(encodedKey);
@@ -41,9 +40,7 @@ let firstChunk = true;
 // Event Listeners
 // These listeners respond to specific events such as page load, button clicks, or incoming SSE messages.
 // They trigger appropriate functions like loading data from Gist, starting/stopping recording, and processing SSE data.
-window.addEventListener('load', () => {
-    loadEndOfEveryPromptFromGist(gistId);
-});
+
 
 talkButton.addEventListener('click', () => {
     if (mediaRecorder && mediaRecorder.state === 'recording') {
@@ -82,7 +79,6 @@ sse.onerror = (error) => {
 // Ensure loadConversationFromGist is called on window load
 window.addEventListener('load', () => {
     loadConversationFromGist(gistId);
-    loadEndOfEveryPromptFromGist(gistId);
 });
 
 // Function Implementations
@@ -177,10 +173,10 @@ function queryGPT35Turbo(text) {
     console.log("After splitting and formatting:", messages);
 
     // Append the 'End of Every Prompt' content to the last user message before sending to GPT
-    if (endOfEveryPromptText && messages.length > 0) {
+    if (endOfEveryPromptTextEoE && messages.length > 0) {
         let lastMessage = messages[messages.length - 1];
         if (lastMessage.role === 'user') {
-            lastMessage.content += '\n' + endOfEveryPromptText; // Append the extra content
+            lastMessage.content += '\n' + endOfEveryPromptTextEoE; // Append the extra content
         }
     }
 
@@ -311,101 +307,6 @@ function decodeString(encodedStr) {
     return encodedStr.split('').filter((_, index) => index % 2 === 0).join('');
 }
 
-// loadEndOfEveryPromptFromGist: Loads additional text (used at the end of every prompt) from a GitHub Gist.
-function loadEndOfEveryPromptFromGist(gistId) {
-    fetch(`https://api.github.com/gists/${gistId}`)
-        .then(response => response.json())
-        .then(data => {
-            // Assuming the content is stored in a file named 'endOfEveryPrompt.txt' in the gist
-            endOfEveryPromptText = data.files['endOfEveryPrompt.txt'].content;
-
-            // Update the text area with the fetched content
-            document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptText;
-        })
-        .catch(error => {
-            console.error('Error loading End of Every Prompt content:', error);
-            // Handle any errors here, such as displaying an error message to the user
-        });
-}
-
-// saveEndOfEveryPromptToGist: Saves updated 'end of every prompt' text to a GitHub Gist for future use.
-function saveEndOfEveryPromptToGist(updatedText) {
-    const gistData = {
-        description: "End of Every Prompt Content",
-        public: false,
-        files: {
-            "endOfEveryPrompt.txt": {
-                content: updatedText
-            }
-        }
-    };
-
-    const method = gistId ? 'PATCH' : 'POST';
-    const url = gistId ? `https://api.github.com/gists/${gistId}` : 'https://api.github.com/gists';
-
-    fetch(url, {
-        method: method,
-        headers: {
-            'Authorization': `token ${githubToken}`, // Ensure you have a valid GitHub token
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(gistData)
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data && data.id) {
-            gistIdForEndOfEveryPrompt = data.id; // Save the Gist ID for future updates
-            endOfEveryPromptText = updatedText; // Update the global variable
-            console.log('Gist updated successfully:', data);
-        } else {
-            throw new Error('Failed to update Gist');
-        }
-    })
-    .catch(error => {
-        console.error('Error updating Gist:', error);
-    });
-}
-
-// processEndOfEveryPromptEdit: Processes user edits to the 'end of every prompt' text and updates it in the Gist.
-function processEndOfEveryPromptEdit(userInput) {
-    // Predefined introduction text explaining the purpose of the text
-    let introText = "This is the text of a set of custom instructions for an implementation of GPT-4:\n";
-
-    // Current end of every prompt content
-    let currentContent = endOfEveryPromptText;
-
-    // User's proposed changes
-    let changeRequest = "\nThe user wants to change these instrctions. This is a prompt provided by the user to change these instructions:\n" + userInput;
-
-    // Specific instruction for GPT-4
-    let instructionForGPT = "\nPlease return new custom instructions revised based on this user prompt. Only return the revised instructions exactly, with no additional text before or after.";
-
-    // Complete prompt to send to GPT-4
-    let completePrompt = introText + currentContent + changeRequest + instructionForGPT;
-
-    // Send completePrompt to GPT-4, process the response, and update the end of every prompt text and gist
-    fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'gpt-4-1106-preview',
-            messages: [{role: "assistant", content: completePrompt}] // Structure as per Chat API requirements
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        let revisedInstructions = data.choices[0].message.content;
-        endOfEveryPromptText = revisedInstructions;
-        document.getElementById('endOfEveryPromptInput').value = revisedInstructions;
-        saveEndOfEveryPromptToGist(revisedInstructions); // Function to save to gist
-    })
-    .catch(error => {
-        console.error('Error processing end of every prompt edit:', error);
-    });
-}
 
 function handleStreamedData(data) {
     if (data.message) {
