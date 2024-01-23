@@ -1,4 +1,4 @@
-// WWXXZZZ
+// WWXXZZZTTTTTTTT
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -62,8 +62,8 @@ sendTextButton.addEventListener('click', () => {
     const userInput = document.getElementById('textInput').value;
     if (userInput) {
         document.getElementById('textInput').value = '';
-        conversationContextb = 'User: ' + userInput + '\n';
-        conversationContext += 'User: ' + userInput + '\n';
+        conversationContextb = '\n' + 'User: ' + userInput + '\n';
+        conversationContext += '\n' + 'User: ' + userInput + '\n';
         console.log("Appended to conversation context:", conversationContext);
         updateConversationWindow(conversationContextb);
         queryGPT35Turbo(conversationContext);
@@ -135,8 +135,8 @@ function processAudioChunk(audioBlob) {
     .then(data => {
         let transcribedText = data.text;
         console.log("Transcription received:", transcribedText);
-        conversationContextb = 'User: ' + transcribedText + '\n';
-        conversationContext += 'User: ' + transcribedText + '\n';
+        conversationContextb = '\n' + 'User: ' + transcribedText + '\n';
+        conversationContext += '\n' + 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
         updateConversationWindow(conversationContextb);
         queryGPT35Turbo(conversationContext);
@@ -152,6 +152,7 @@ function processFullConversation() {
 
 // queryGPT35Turbo: Sends the current conversation context to GPT-3.5 Turbo for processing and appends the AI's response to the conversation.
 function queryGPT35Turbo(text) {
+    firstChunk = true;
     console.log("Querying GPT-3.5 Turbo with text:", text);
     // Add user's input to the conversation context for display
     //conversationContext += 'User: ' + text + '\n';
@@ -410,10 +411,11 @@ function handleStreamedData(data) {
             // Clear accumulated texts for the next message and reset firstChunk
             accumulatedText = '';
             accumulatedTextb = '';
-            firstChunk = true;
         }
     }
 }
+
+
 
 
 
