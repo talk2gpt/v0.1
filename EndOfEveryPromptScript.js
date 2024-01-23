@@ -27,9 +27,7 @@ let githubTokenEoE = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvO
 let recordingIntervalEoE;
 let endOfEveryPromptTextEoE = '';
 const talkButtonEndOfEveryPromptEoE = document.getElementById('talkButtonEndOfEveryPromptEoE');
-const encodedKeyEoE = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2Z2hsWERM";
-const apiKeyEoE = atob(encodedKeyEoE);
-const sseEoE = new EventSource('https://mammoth-spice-peace.glitch.me/events');
+const sseEoE = new EventSource('https://mammoth-spice-peace.glitch.me/eventsEoE');
 const submitEndOfEveryPromptEditEoE = document.getElementById('submitEndOfEveryPromptEditEoE');
 let firstChunkEoE = true;
 
@@ -246,37 +244,35 @@ function processeEoEndOfEveryPromptEditEoE(userInputEoE) {
     // Complete prompt to send to GPT-4
     let completePromptEoE = introTextEoE + currentContentEoE + changeRequestEoE + instructionForGPTEoE;
 
-    // Send completePromptEoE to GPT-4, process the responseEoE, and update the end of every prompt text and gist
-    fetch('https://api.openai.com/v1/chat/completions', {
-        methodEoE: 'POST',
+    // Construct the payload to send to your Glitch server
+    let payloadEoE = {
+        model: 'gpt-4-1106-preview',
+        messages: [{role: "assistant", content: completePromptEoE}] // Structure as per Chat API requirements
+    };
+
+    // Send the payload to your Glitch server
+    fetch('https://mammoth-spice-peace.glitch.me/send-messageEoE', {
+        method: 'POST',
         headers: {
-            'Authorization': `Bearer ${apiKeyEoE}`,
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-            model: 'gpt-4-1106-preview',
-            messages: [{role: "assistant", content: completePromptEoE}] // Structure as per Chat API requirements
-        })
+        body: JSON.stringify(payloadEoE)
     })
-    .then(responseEoE => responseEoE.json())
-    .then(dataEoE => {
-        let revisedInstructionsEoE = dataEoE.choices[0].message.content;
-        endOfEveryPromptTextEoE = revisedInstructionsEoE;
-        document.getElementById('endOfEveryPromptInput').value = revisedInstructionsEoE;
-        saveEndOfEveryPromptToGistEoE(revisedInstructionsEoE); // Function to save to gist
+    .then(responseEoE => {
+        if (!responseEoE.ok) {
+            throw new Error('Network response was not ok');
+        }
+        console.log("Message sent to GPT endpoint", payloadEoE);
+        // Optionally handle the immediate response from the server if needed
     })
-    .catch(errorEoE => {
-        console.error('errorEoE processing end of every prompt edit:', errorEoE);
+    .catch(error => {
+        console.error('Error sending message to Glitch server:', error);
     });
-}
+
 
 function handleStreamedDataEoE(dataEoE) {
+    conversationContextEoE = '';
     if (dataEoE.message) {
-        if (firstChunkEoE) {
-            // Prepend "AI:" only at the beginning of the first chunk of a new message
-            accumulatedTextEoEb += 'AI: ';
-            firstChunkEoE = false;
-        }
         accumulatedTextEoE += dataEoE.message;
         accumulatedTextEoEb += dataEoE.message;
         
