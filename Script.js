@@ -405,6 +405,7 @@ function handleStreamedData(data) {
             conversationContext += accumulatedTextb + ' ';
             accumulatedText = '';
             accumulatedTextb = '';
+        }
         if (data.streamComplete) {
             conversationContext += accumulatedTextb + '\n';
             accumulatedText = '';
