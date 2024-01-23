@@ -78,7 +78,6 @@ sseEoE.onerror = (errorEoE) => {
 
 // Ensure loadConversationFromGistEoE is called on window load
 window.addEventListener('load', () => {
-    loadConversationFromGistEoE(gistIdEoE);
     loadEndOfEveryPromptFromGistEoE(gistIdEoE);
 });
 
