@@ -391,10 +391,10 @@ function handleStreamedData(data) {
     if (data.message) {
         if (firstChunk) {
             // Prepend "AI:" only at the beginning of the first chunk of a new message
-             += 'AI: ';
+            accumulatedText += 'AI: ';
             firstChunk = false;
         }
-         += data.message;
+        accumulatedText += data.message;
 
         if (data.streamComplete || /[.?!]\s*$/.test()) {
             // Queue the TTS request with the full message
@@ -404,7 +404,7 @@ function handleStreamedData(data) {
             appendToConversationContext(, data.streamComplete);
 
             // Clear  for the next message and reset firstChunk
-             = '';
+            accumulatedText = '';
             firstChunk = true;
         }
     }
