@@ -183,7 +183,7 @@ function loadEndOfEveryPromptFromGistEoE(gistIdEoE) {
             endOfEveryPromptTextEoE = dataEoE.files['endOfEveryPrompt.txt'].content;
 
             // Update the text area with the fetched content
-            document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptTextEoE;
+            document.getElementById('endOfEveryPromptContentEoE').value = endOfEveryPromptTextEoE;
         })
         .catch(errorEoE => {
             console.error('errorEoE loading End of Every Prompt content:', errorEoE);
