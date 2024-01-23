@@ -57,9 +57,12 @@ talkButton.addEventListener('click', () => {
 sendTextButton.addEventListener('click', () => {
     const userInput = document.getElementById('textInput').value;
     if (userInput) {
-        updateConversationWindow('User: ' + userInput + '\n');
-        queryGPT35Turbo(userInput);
         document.getElementById('textInput').value = '';
+        conversationContextb = 'User: ' + userInput + '\n';
+        conversationContext += 'User: ' + userInput + '\n';
+        console.log("Appended to conversation context:", conversationContext);
+        updateConversationWindow(conversationContextb);
+        queryGPT35Turbo(conversationContext);
     }
 });
 
@@ -128,10 +131,11 @@ function processAudioChunk(audioBlob) {
     .then(data => {
         let transcribedText = data.text;
         console.log("Transcription received:", transcribedText);
+        conversationContextb = 'User: ' + transcribedText + '\n';
         conversationContext += 'User: ' + transcribedText + '\n';
         console.log("Appended to conversation context:", conversationContext);
-        updateConversationWindow(transcribedText);
-        queryGPT35Turbo(transcribedText);
+        updateConversationWindow(conversationContextb);
+        queryGPT35Turbo(conversationContext);
     })
     .catch(error => console.error('Error:', error));
 }
@@ -146,7 +150,7 @@ function processFullConversation() {
 function queryGPT35Turbo(text) {
     console.log("Querying GPT-3.5 Turbo with text:", text);
     // Add user's input to the conversation context for display
-    conversationContext += 'User: ' + text + '\n';
+    //conversationContext += 'User: ' + text + '\n';
     const conversationWindow = document.getElementById('conversationWindow');
     conversationWindow.innerText = conversationContext;
     console.log("Before splitting and formatting:", conversationContext);
@@ -386,10 +390,10 @@ function handleStreamedData(data) {
         accumulatedText += data.message;
         if (/[.?!]\s*$/.test(accumulatedText)) {
             queueTTSRequest(accumulatedText);
-  //          conversationContextb = '';
+            conversationContextc = 'AI: ' + accumulatedText + '\n';
             conversationContext += 'AI: ' + accumulatedText + '\n';
-            updateConversationWindow(conversationContext);
-            saveConversationToGist(conversationContext);
+            updateConversationWindow(conversationContextc);
+            saveConversationToGist(conversationContextc);
             accumulatedText = '';
             // Call saveConversationToGist after AI's complete response
         }
