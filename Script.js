@@ -79,6 +79,12 @@ sse.onerror = (error) => {
     console.error('SSE Error:', error);
 };
 
+// Ensure loadConversationFromGist is called on window load
+window.addEventListener('load', () => {
+    loadConversationFromGist(gistId);
+    loadEndOfEveryPromptFromGist(gistId);
+});
+
 // Function Implementations
 // Each function is documented with details on its purpose, input, output, and interaction with other components.
 
