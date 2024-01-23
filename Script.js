@@ -33,6 +33,9 @@ const encodedKey = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2
 const apiKey = atob(encodedKey);
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 const sendTextButton = document.getElementById('sendTextButton');
+let firstChunk = true;
+let accumulatedText = '';
+
 
 // Event Listeners
 // These listeners respond to specific events such as page load, button clicks, or incoming SSE messages.
@@ -384,20 +387,43 @@ function processEndOfEveryPromptEdit(userInput) {
     });
 }
 
-// handleStreamedData: Handles data received from server-sent events, accumulates text for TTS processing, and updates the conversation.
 function handleStreamedData(data) {
     if (data.message) {
+        if (firstChunk) {
+            // Prepend "AI:" only at the beginning of the first chunk of a new message
+            accumulatedText += 'AI: ';
+            firstChunk = false;
+        }
         accumulatedText += data.message;
-        if (/[.?!]\s*$/.test(accumulatedText)) {
+
+        if (data.streamComplete || /[.?!]\s*$/.test(accumulatedText)) {
+            // Queue the TTS request with the full message
             queueTTSRequest(accumulatedText);
-            conversationContextc = 'AI: ' + accumulatedText + '\n';
-            conversationContext += 'AI: ' + accumulatedText + '\n';
-            updateConversationWindow(conversationContextc);
-            saveConversationToGist(conversationContextc);
+
+            // Append the full message to the conversation context
+            appendToConversationContext(accumulatedText, data.streamComplete);
+
+            // Clear accumulatedText for the next message and reset firstChunk
             accumulatedText = '';
-            // Call saveConversationToGist after AI's complete response
+            firstChunk = true;
         }
     }
+}
+
+function appendToConversationContext(text, streamComplete) {
+    if (streamComplete) {
+        // If the stream is complete, append with a new line
+        conversationContext += text + '\n';
+    } else {
+        // If the stream is not complete, append with a space
+        conversationContext += text + ' ';
+    }
+
+    // Update the conversation window
+    updateConversationWindow(text);
+
+    // Save the conversation to the gist
+    saveConversationToGist(conversationContext);
 }
 
 // queueTTSRequest: Adds a text to the TTS queue and initiates processing if not already active.
