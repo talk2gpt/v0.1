@@ -20,6 +20,7 @@ let mediaRecorder;
 let audioChunks = [];
 let conversationContext = '';
 let accumulatedText = '';
+let accumulatedTextb = '';
 let ttsQueue = [];
 let isProcessingTTS = false;
 let audioQueue = [];
