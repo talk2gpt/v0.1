@@ -15,6 +15,7 @@
 let mediaRecorderEoE;
 let audioChunksEoE = [];
 let conversationContextEoE = '';
+let conversationContextbEoE = '';
 let accumulatedTextEoE = '';
 let accumulatedTextEoEb = '';
 let ttsQueueEoE = [];
@@ -58,10 +59,10 @@ submitEndOfEveryPromptEditEoE.addEventListener('click', () => {
     const userInputEoE = document.getElementById('endOfEveryPromptInput').value;
     if (userInputEoE) {
         document.getElementById('endOfEveryPromptInput').value = '';
-        conversationContextEoEb = '\n' + 'User: ' + userInputEoE + '\n';
+        conversationContextbEoE = '\n' + 'User: ' + userInputEoE + '\n';
         conversationContextEoE += '\n' + 'User: ' + userInputEoE + '\n';
         console.log("Appended to conversation context:", conversationContextEoE);
-        updateConversationWindow(conversationContextEoEb);
+        updateConversationWindow(conversationContextbEoE);
         queryGPT35Turbo(conversationContextEoE);
     }
 });
@@ -72,7 +73,7 @@ sseEoE.onmessage = (eventEoE) => {
 };
 
 sseEoE.onerror = (errorEoE) => {
-    console.errorEoE('sseEoE errorEoE:', errorEoE);
+    console.error('sseEoE errorEoE:', errorEoE);
 };
 
 // Ensure loadConversationFromGistEoE is called on window load
@@ -88,7 +89,7 @@ window.addEventListener('load', () => {
 function startRecordingEoE() {
     navigator.mediaDevices.getUserMedia({ audio: true })
         .then(streamEoE => {
-            mediaRecorderEoE = new mediaRecorderEoE(streamEoE);
+            mediaRecorderEoE = new MediaRecorder(streamEoE);
             mediaRecorderEoE.start();
             recordingIntervalEoE = setInterval(() => {
                 if (mediaRecorderEoE.state === 'recording') {
@@ -104,7 +105,7 @@ function startRecordingEoE() {
 
             streamEoE.getAudioTracks()[0].addEventListener('ended', stopRecordingEoE);
         })
-        .catch(errorEoE => console.errorEoE('errorEoE:', errorEoE));
+        .catch(errorEoE => console.error('errorEoE:', errorEoE));
 }
 
 // stopRecordingEoE: Stops the media recorder and clears the recording interval.
@@ -122,7 +123,7 @@ function processAudioChunkEoE(audioBlob) {
         type: "audio/mp3",
     });
 
-    let formdataEoE = new FormdataEoE();
+    let formdataEoE = new FormData();
     formdataEoE.append("file", audioFileEoE);
     formdataEoE.append("model", "whisper-1");
 
@@ -137,13 +138,13 @@ function processAudioChunkEoE(audioBlob) {
     .then(dataEoE => {
         let transcribedTextEoE = dataEoE.text;
         console.log("Transcription received:", transcribedTextEoE);
-        conversationContextEoEb = '\n' + 'User: ' + transcribedTextEoE + '\n';
+        conversationContextbEoE = '\n' + 'User: ' + transcribedTextEoE + '\n';
         conversationContextEoE += '\n' + 'User: ' + transcribedTextEoE + '\n';
         console.log("Appended to conversation context:", conversationContextEoE);
-        updateConversationWindow(conversationContextEoEb);
+        updateConversationWindow(conversationContextbEoE);
         queryGPT35Turbo(conversationContextEoE);
     })
-    .catch(errorEoE => console.errorEoE('errorEoE:', errorEoE));
+    .catch(errorEoE => console.error('errorEoE:', errorEoE));
 }
 
 
@@ -162,14 +163,14 @@ function textToSpeechEoE(text, callback) {
             voice: 'shimmer'
         })
     })
-    .then(responseEoE => responseEoE.blobEoE())
-    .then(blobEoE => {
-        const audioUrlEoE = urlEoE.createObjectURL(blobEoE);
+    .then(responseEoE => responseEoE.blob())
+    .then(blob => {
+        const audioUrlEoE = URL.createObjectURL(blob);
         queueAudioEoE(audioUrlEoE);
         callback();
     })
     .catch(errorEoE => {
-        console.errorEoE('TTS errorEoE:', errorEoE);
+        console.error('TTS errorEoE:', errorEoE);
         callback();
     });
 }
@@ -186,7 +187,7 @@ function loadEndOfEveryPromptFromGistEoE(gistIdEoE) {
             document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptTextEoE;
         })
         .catch(errorEoE => {
-            console.errorEoE('errorEoE loading End of Every Prompt content:', errorEoE);
+            console.error('errorEoE loading End of Every Prompt content:', errorEoE);
             // Handle any errors here, such as displaying an errorEoE message to the user
         });
 }
@@ -225,7 +226,7 @@ function saveEndOfEveryPromptToGistEoE(updatedTextEoE) {
         }
     })
     .catch(errorEoE => {
-        console.errorEoE('errorEoE updating Gist:', errorEoE);
+        console.error('errorEoE updating Gist:', errorEoE);
     });
 }
 
@@ -266,7 +267,7 @@ function processeEoEndOfEveryPromptEditEoE(userInputEoE) {
         saveEndOfEveryPromptToGistEoE(revisedInstructionsEoE); // Function to save to gist
     })
     .catch(errorEoE => {
-        console.errorEoE('errorEoE processing end of every prompt edit:', errorEoE);
+        console.error('errorEoE processing end of every prompt edit:', errorEoE);
     });
 }
 
