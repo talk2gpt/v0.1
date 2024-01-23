@@ -26,6 +26,7 @@ let gistIdEoE = '319efc519c6a17699365d23874099a78';
 let githubTokenEoE = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingIntervalEoE;
 let endOfEveryPromptTextEoE = '';
+console.log("endOfEveryPromptTextEoE defined by eoejs as null, specifically:", endOfEveryPromptTextEoE);
 const encodedKeyEoE = "c2stSDBGQXk1SGFqVm5BSTNoQ2c2N2NUM0JsYmtGSm5jMmpEQVdmbHloamwxVGs3cTJs";
 const apiKeyEoE = atob(encodedKeyEoE);
 const talkButtonEndOfEveryPromptEoE = document.getElementById('talkButtonEndOfEveryPromptEoE');
@@ -181,6 +182,7 @@ function loadEndOfEveryPromptFromGistEoE(gistIdEoE) {
         .then(dataEoE => {
             // Assuming the content is stored in a file named 'endOfEveryPrompt.txt' in the gist
             endOfEveryPromptTextEoE = dataEoE.files['endOfEveryPrompt.txt'].content;
+            console.log("endOfEveryPromptTextEoE defined by eoejs as:", endOfEveryPromptTextEoE);
 
             // Update the text area with the fetched content
             document.getElementById('endOfEveryPromptContentEoE').value = endOfEveryPromptTextEoE;
