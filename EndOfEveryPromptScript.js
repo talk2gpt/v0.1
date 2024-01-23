@@ -1,4 +1,4 @@
-// UXBCSDNA
+// UXBCSDNAVEBIUNOKPWIUBYCTFRYGUBIO
 
 // Global Variables and Constants
 // These variables are used throughout the script for various purposes.
@@ -68,7 +68,7 @@ submitEndOfEveryPromptEditEoE.addEventListener('click', () => {
 });
 
 sseEoE.onmessage = (eventEoE) => {
-    const dataEoE = JSON.parse(eventEoE.dataEoE);
+    const dataEoE = JSON.parse(eventEoE.data);
     handleStreamedDataEoE(dataEoE);
 };
 
