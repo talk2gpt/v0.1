@@ -1,4 +1,4 @@
-// WWXXZZZTTTTTTTTGGGGGGGGGAAAA
+// WWXXZZZTTTTTTTTGGGGGGGGGAAXXSSAA
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -171,7 +171,7 @@ function queryGPT35Turbo(text) {
         };
     });
     console.log("After splitting and formatting:", messages);
-
+    console.log("endOfEveryPromptTextEoE is currently known by the script.js to be, before trying to use it:", endOfEveryPromptTextEoE);
     // Append the 'End of Every Prompt' content to the last user message before sending to GPT
     if (endOfEveryPromptTextEoE && messages.length > 0) {
         let lastMessage = messages[messages.length - 1];
