@@ -1,4 +1,4 @@
-// WW
+// WWXX
 //High-Level Overview
 // This JavaScript code is designed to facilitate an interactive chat application that integrates OpenAI's GPT and TTS APIs.
 // It includes functionality for recording audio, processing it for transcription, interacting with OpenAI's APIs, and managing the conversation flow.
@@ -396,12 +396,12 @@ function handleStreamedData(data) {
         }
         accumulatedText += data.message;
 
-        if (data.streamComplete || /[.?!]\s*$/.test()) {
+        if (data.streamComplete || /[.?!]\s*$/.test(accumulatedText)) {
             // Queue the TTS request with the full message
-            queueTTSRequest();
+            queueTTSRequest(accumulatedText);
 
             // Append the full message to the conversation context
-            appendToConversationContext(, data.streamComplete);
+            appendToConversationContext(accumulatedText, data.streamComplete);
 
             // Clear  for the next message and reset firstChunk
             accumulatedText = '';
