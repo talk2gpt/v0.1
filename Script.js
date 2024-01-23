@@ -407,11 +407,6 @@ function handleStreamedData(data) {
             updateConversationWindow(accumulatedTextb + ' ');    
             saveConversationToGist(conversationContext);
         }
-        if (data.streamComplete) {
-            conversationContext += accumulatedTextb + '\n';
-            updateConversationWindow(accumulatedTextb + ' ');    
-            saveConversationToGist(conversationContext);
-            firstChunk = true;
         }
         accumulatedText = '';
         accumulatedTextb = '';
