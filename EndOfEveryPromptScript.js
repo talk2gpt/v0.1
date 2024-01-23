@@ -1,4 +1,4 @@
-// UXBCSDNAVEBIUNOKPWIUBYCTFRYGUBIOAW
+// UXBCSDNAVEBIUNOKPWIUBYCTFRYGUBIOAWAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
 
 // Global Variables and Constants
 // These variables are used throughout the script for various purposes.
@@ -185,12 +185,22 @@ function loadEndOfEveryPromptFromGistEoE(gistIdEoE) {
             console.log("endOfEveryPromptTextEoE defined by eoejs as:", endOfEveryPromptTextEoE);
 
             // Update the text area with the fetched content
-            document.getElementById('endOfEveryPromptContentEoE').value = endOfEveryPromptTextEoE;
+         updateConversationWindowEoE(endOfEveryPromptTextEoE);
         })
         .catch(errorEoE => {
             console.error('errorEoE loading End of Every Prompt content:', errorEoE);
             // Handle any errors here, such as displaying an errorEoE message to the user
         });
+}
+
+function updateConversationWindowEoE(text) {
+    const conversationWindowEoE = document.getElementById('endOfEveryPromptContentEoE');
+    if (conversationWindowEoE) {
+        conversationWindowEoE.innerText = text;
+        conversationWindowEoE.scrollTop = conversationWindowEoE.scrollHeight;
+    } else {
+        console.error('ConversationEoE window element not found');
+    }
 }
 
 // saveEndOfEveryPromptToGistEoE: Saves updated 'end of every prompt' text to a GitHub Gist for future use.
