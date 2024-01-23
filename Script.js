@@ -29,7 +29,7 @@ let gistId = '319efc519c6a17699365d23874099a78';
 let githubToken = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvObungzJwDqUhvoCpDq6cHuVi0wlelefyqjxq");
 let recordingInterval;
 const talkButton = document.getElementById('talkButton');
-const encodedKey = "c2stM3RScFE4YWxydktBZ3J1OGZtNnFUM0JsYmtGSmtCSUxib1liT1NQV0k2Z2hsWERM";
+const encodedKey = "c2stSDBGQXk1SGFqVm5BSTNoQ2c2N2NUM0JsYmtGSm5jMmpEQVdmbHloamwxVGs3cTJs";
 const apiKey = atob(encodedKey);
 const sse = new EventSource('https://mammoth-spice-peace.glitch.me/events');
 const sendTextButton = document.getElementById('sendTextButton');
