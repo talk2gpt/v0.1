@@ -320,7 +320,7 @@ function loadEndOfEveryPromptFromGist(gistId) {
             endOfEveryPromptText = data.files['endOfEveryPrompt.txt'].content;
 
             // Update the text area with the fetched content
-            document.getElementById('endOfEveryPromptInput').value = endOfEveryPromptText;
+            document.getElementById('endOfEveryPromptContent').value = endOfEveryPromptText;
         })
         .catch(error => {
             console.error('Error loading End of Every Prompt content:', error);
