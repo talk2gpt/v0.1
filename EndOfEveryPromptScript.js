@@ -27,7 +27,7 @@ let githubTokenEoE = decodeString("gzhapi_r4a2ykdYlrkslZmJwxq2ySf1xHuFsUhunyrcvO
 let recordingIntervalEoE;
 let endOfEveryPromptTextEoE = '';
 const encodedKeyEoE = "c2stSDBGQXk1SGFqVm5BSTNoQ2c2N2NUM0JsYmtGSm5jMmpEQVdmbHloamwxVGs3cTJs";
-const apiKeyEoE = atob(encodedKey);
+const apiKeyEoE = atob(encodedKeyEoE);
 const talkButtonEndOfEveryPromptEoE = document.getElementById('talkButtonEndOfEveryPromptEoE');
 const sseEoE = new EventSource('https://mammoth-spice-peace.glitch.me/eventsEoE');
 const submitEndOfEveryPromptEditEoE = document.getElementById('submitEndOfEveryPromptEditEoE');
